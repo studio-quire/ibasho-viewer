@@ -11948,6 +11948,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>IbashoMaxUploadCost</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: largest L$ fee the IbashoAgent upload API will pay for one upload (uploads also count toward IbashoMaxSessionSpend).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>50</integer>
+    </map>
     <key>TextureCameraBoost</key>
     <map>
       <key>Comment</key>
