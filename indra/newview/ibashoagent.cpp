@@ -68,6 +68,7 @@
 #include "llviewerregion.h"
 #include "llvoavatarself.h"
 #include "llworld.h"
+#include "pipeline.h"
 #include "message.h"
 
 void send_lures(const LLSD& notification, const LLSD& response); // llviewermessage.cpp
@@ -446,9 +447,24 @@ public:
         add("rebake",
             "Force a rebake of my avatar's textures (Advanced > Rebake Textures).",
             &IbashoAgentListener::rebake);
+        add("renderUI",
+            "Whether the viewer draws its 2D UI at all (chat console, toasts, floaters, menus; Ctrl+Alt+F1).\n"
+            "Optional [\"visible\"] bool sets it. While hidden, mouse clicks don't reach the UI.\n"
+            "Replies {visible} (the state after any change).",
+            &IbashoAgentListener::renderUI,
+            llsd::map("reply", LLSD()));
     }
 
 private:
+    void renderUI(const LLSD& data)
+    {
+        Response response(LLSD(), data);
+        constexpr U32 ui = LLPipeline::RENDER_DEBUG_FEATURE_UI;
+        if (data.has("visible") && data["visible"].asBoolean() != gPipeline.hasRenderDebugFeatureMask(ui))
+            LLPipeline::toggleRenderDebugFeature(ui);
+        response["visible"] = gPipeline.hasRenderDebugFeatureMask(ui);
+    }
+
     void balance(const LLSD& data)
     {
         Response response(LLSD(), data);
