@@ -38,6 +38,8 @@
 #include "lluictrl.h"
 #include "llerror.h"
 #include "llcombobox.h"
+#include "stringize.h" // Ibasho: error replies below
+#include <iomanip>     // Ibasho: std::quoted
 
 
 LLUIListener::LLUIListener():
@@ -66,15 +68,14 @@ LLUIListener::LLUIListener():
 
 void LLUIListener::call(const LLSD& event) const
 {
+    // Ibasho: reply if asked (empty, or with the error) instead of being fire-and-forget.
+    Response response(LLSD(), event);
     LLUICtrl::commit_callback_t* func =
         LLUICtrl::CommitCallbackRegistry::getValue(event["function"]);
     if (! func)
     {
-        // This API is intended for use by a script. It's a fire-and-forget
-        // API: we provide no reply. Therefore, a typo in the script will
-        // provide no feedback whatsoever to that script. To rub the coder's
-        // nose in such an error, crump rather than quietly ignoring it.
-        LL_ERRS("LLUIListener") << "function '" << event["function"] << "' not found" << LL_ENDL;
+        // Ibasho: report the typo instead of crashing the viewer.
+        response.error(stringize("function ", std::quoted(event["function"].asString()), " not found"));
     }
     else
     {
