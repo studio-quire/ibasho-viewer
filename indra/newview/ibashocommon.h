@@ -57,6 +57,11 @@ namespace ibasho
     std::string spendRefusal(S32 amount);
     void recordSpend(S32 amount);
     S32 spentThisSession();
+
+    // IbashoAgent ops that live in their own files (ibashomove.cpp, ibashomesh.cpp).
+    void move(const LLSD& request);
+    void stopMove(const LLSD& request);
+    void uploadMesh(const LLSD& request);
 }
 
 #endif

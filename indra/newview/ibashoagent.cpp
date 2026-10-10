@@ -453,6 +453,33 @@ public:
             "Replies {visible} (the state after any change).",
             &IbashoAgentListener::renderUI,
             llsd::map("reply", LLSD()));
+        add("move",
+            "Hold movement controls for [\"secs\"] (default 1, max 600), as held keys do but without needing\n"
+            "keyboard focus; scripts that took controls (vehicles) see them like keys. [\"forward\"] -1..1\n"
+            "(back/forward), [\"strafe\"] -1..1 (+ right), [\"up\"] -1..1 (jump or fly up / crouch or fly down),\n"
+            "each held at full while |v| >= 0.5, as a key tap's slower nudge below that (OpenSim hands\n"
+            "nudges to scripts as the full control); [\"turn\"] deg/s (+ right/clockwise; a held turn key\n"
+            "is 90). [\"run\"] runs meanwhile,\n"
+            "[\"fly\"] true/false sets flying first, [\"face\"] a compass bearing (0 N, 90 E) to face first.\n"
+            "The camera is left alone. A new move replaces the current one. Replies at the start {id, pos,\n"
+            "region, heading, sitting, flying}, or with [\"wait\"] at the end. The end also posts an IbashoEvents\n"
+            "{event: \"move_done\", id, reason (time|stop|replaced|locked), secs, moved (m), pos, ...}.",
+            [](const LLSD& data) { ibasho::move(data); });
+        add("stop",
+            "Stop the current move now. Replies {was_moving, pos, ...} (the move_done info if it was moving).",
+            [](const LLSD& data) { ibasho::stopMove(data); });
+        add("uploadMesh",
+            "Upload a model (.dae, .gltf, .glb) through the model upload floater, as picking the file for\n"
+            "the high LOD does: lower LODs and physics as the floater generates them by default, then\n"
+            "\"Calculate weights & fee\", then \"Upload\". Optional [\"name\"] (default: from the file),\n"
+            "[\"scale\"] (import scale), [\"textures\"] (also upload its textures; costs more), [\"folder_id\"]\n"
+            "(default Objects), [\"timeout\"] (s, default 180), [\"keep_open\"] (leave the floater open).\n"
+            "Refused if the fee is over [\"max_cost\"], IbashoMaxUploadCost, or the pay caps. [\"quote\"]: stop\n"
+            "after calculating. Replies {name, cost, weights {land_impact, streaming, physics, server,\n"
+            "price_breakdown}, refusal?} for a quote, else adds {item_id, asset_id, charged} once the item\n"
+            "exists; errors carry the floater's [\"log\"].",
+            [](const LLSD& data) { ibasho::uploadMesh(data); },
+            llsd::map("path", LLSD()));
     }
 
 private:

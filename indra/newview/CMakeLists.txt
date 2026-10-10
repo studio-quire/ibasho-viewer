@@ -758,6 +758,8 @@ set(viewer_SOURCE_FILES
     ibashoagent.cpp
     ibashocommon.cpp
     ibashoim.cpp
+    ibashomesh.cpp
+    ibashomove.cpp
     ibashoobjects.cpp
     # </Ibasho>
     )

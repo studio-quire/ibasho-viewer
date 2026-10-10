@@ -139,6 +139,7 @@ protected:
     friend class LLModelPreview;
     friend class LLMeshFilePicker;
     friend class LLPhysicsDecomp;
+    friend class IbashoMeshAccess; // Ibasho: ibashomesh.cpp drives the floater over LEAP
 
     void        onDescriptionKeystroke(LLUICtrl*);
 
