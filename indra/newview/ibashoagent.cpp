@@ -34,15 +34,19 @@
 #include "llavatarappearancedefines.h"
 #include "llavatarnamecache.h"
 #include "llcallingcard.h"
+#include "llchatitemscontainerctrl.h"
 #include "lldbstrings.h"
 #include "lleventapi.h"
 #include "llfilesystem.h"
+#include "llfloater.h"
 #include "llfloaterperms.h"
+#include "llfocusmgr.h"
 #include "llgiveinventory.h"
 #include "llgroupactions.h"
 #include "llimagej2c.h"
 #include "llinventorymodel.h"
 #include "lllocaltextureobject.h"
+#include "llmodaldialog.h"
 #include "llnotifications.h"
 #include "llpermissionsflags.h"
 #include "llviewerassetupload.h"
@@ -56,6 +60,8 @@
 #include "llsdutil_math.h"
 #include "llstartup.h"
 #include "llstatusbar.h"
+#include "lltoast.h"
+#include "lltrans.h"
 #include "lltransactiontypes.h"
 #include "lluserrelations.h"
 #include "llviewercontrol.h"
@@ -71,8 +77,13 @@
 #include "pipeline.h"
 #include "message.h"
 
+#include <map>
+#include <optional>
+#include <set>
+
 void send_lures(const LLSD& notification, const LLSD& response); // llviewermessage.cpp
 void handle_rebake_textures();                                  // llviewermenu.cpp
+extern std::function<bool(LLFloater*, bool)> gIbashoFloaterVisibility; // llfloater.cpp
 
 using namespace LLAvatarAppearanceDefines;
 
@@ -334,6 +345,158 @@ LLViewerJointAttachment* findAttachPoint(const LLSD& point)
     return nullptr;
 }
 
+// ---- streamUI (2026-10-10, Claude Opus 5.5) ----
+// While on, the UI draws as usual except for anything that puts other people's words on screen: chat and IM
+// floaters, nearby chat and IM toasts, and notifications from or about people (offers, friendship, group
+// notices...). The gate is LLFloater::setVisible (toasts are floaters too), plus a per-frame sweep for
+// anything that got visible some other way. Held-back floaters are re-shown when it goes off.
+namespace streamui
+{
+using LLNotificationsUI::LLToast;
+
+bool sOn = false;
+bool sOwnChat = true; // my own nearby chat lines may show
+std::optional<bool> sPrevBubbles;
+std::set<std::string> sExtraHide, sExtraShow, sExtraFloaters;
+std::map<LLFloater*, LLHandle<LLFloater>> sHeld;
+
+const std::set<std::string> FLOATERS = {
+    "im_container", "impanel", "nearby_chat", "conversation", "preview_conversation", "im_well_window",
+    "notification_well_window", "inspect_toast", "incoming_call", "notifications_console"};
+// Offers, group notices and the IM toast are excluded by type; anything that logs to an IM session by
+// canLogToIM(). These name or quote people otherwise.
+const std::set<std::string> NOTIFICATIONS = {
+    "FriendOnlineOffline", "PaymentReceived", "PaymentSent", "ObjectMessage", "ServerObjectMessage",
+    "OfferCallingCard", "CallingCardAccepted", "CallingCardDeclined", "OfferFriendshipNoMessage",
+    "VoiceInviteP2P", "VoiceInviteGroup", "VoiceInviteAdHoc", "InviteAdHoc", "P2PCallDeclined", "P2PCallNoAnswer",
+    "AutoUnmuteByIM", "AutoUnmuteByMoney", "AutoUnmuteByInventory", "EjectAvatarFromGroup",
+    "AvatarFrozen", "AvatarFrozenDuration", "AvatarHasUnFrozenYou", "GroupNotice", "JoinGroup"};
+const std::set<std::string> TYPES = {"offer", "groupnotify", "notifytoast"};
+
+bool notificationHides(const LLNotificationPtr& n)
+{
+    const std::string& name = n->getName();
+    if (sExtraShow.count(name))
+        return false;
+    if (sExtraHide.count(name) || NOTIFICATIONS.count(name) || TYPES.count(n->getType()) || n->canLogToIM())
+        return true;
+    // "<name> gave you <item>." after accepting an offer
+    static const std::string gave = LLTrans::getString("InvOfferGaveYou");
+    return name == "SystemMessageTip" && n->getMessage().find(gave) != std::string::npos;
+}
+
+std::string describe(LLFloater* f)
+{
+    if (auto* toast = dynamic_cast<LLToast*>(f))
+    {
+        if (dynamic_cast<LLFloaterIMNearbyChatToastPanel*>(toast->getPanel()))
+            return "toast:nearby chat";
+        LLNotificationPtr n = LLNotifications::instance().find(toast->getNotificationID());
+        return "toast:" + (n ? n->getName() : std::string("?"));
+    }
+    return f->getInstanceName();
+}
+
+bool hides(LLFloater* f)
+{
+    if (auto* modal = dynamic_cast<LLModalDialog*>(f); modal && modal->isModal())
+        return false; // my own confirmations; an invisible modal would also swallow all input
+    if (auto* toast = dynamic_cast<LLToast*>(f))
+    {
+        if (auto* chat = dynamic_cast<LLFloaterIMNearbyChatToastPanel*>(toast->getPanel()))
+            return !(sOwnChat && chat->getFromID() == gAgentID);
+        LLNotificationPtr n = LLNotifications::instance().find(toast->getNotificationID());
+        return !n || notificationHides(n);
+    }
+    if (f->getHost())
+        return false; // hosted floaters go with their host (im_container)
+    const std::string& name = f->getInstanceName();
+    return FLOATERS.count(name) || sExtraFloaters.count(name);
+}
+
+void hold(LLFloater* f)
+{
+    sHeld[f] = f->getHandle();
+    gFocusMgr.releaseFocusIfNeeded(f);
+}
+
+bool filter(LLFloater* f, bool visible)
+{
+    if (!visible)
+    {
+        sHeld.erase(f); // the viewer itself hides it: nothing to restore
+        return false;
+    }
+    if (!sOn || !hides(f))
+        return true;
+    hold(f);
+    return false;
+}
+
+void sweep()
+{
+    std::vector<LLFloater*> found;
+    if (gFloaterView)
+        for (LLView* v : *gFloaterView->getChildList())
+            if (auto* f = dynamic_cast<LLFloater*>(v); f && f->getVisible() && hides(f))
+                found.push_back(f);
+    for (LLFloater* f : found)
+    {
+        f->setVisible(false);
+        hold(f);
+    }
+    for (auto it = sHeld.begin(); it != sHeld.end();)
+    {
+        LLFloater* f = it->second.get();
+        if (!f)
+        {
+            it = sHeld.erase(it);
+            continue;
+        }
+        gFocusMgr.releaseFocusIfNeeded(f); // openFloater focuses after setVisible
+        ++it;
+    }
+    if (gSavedSettings.getBOOL("UseChatBubbles"))
+        gSavedSettings.setBOOL("UseChatBubbles", false);
+}
+
+void setOn(bool on)
+{
+    static bool hooked = false;
+    if (!hooked)
+    {
+        hooked = true;
+        gIbashoFloaterVisibility = filter;
+        ibasho::onIdle([]() { if (sOn) sweep(); });
+    }
+    if (on == sOn)
+        return;
+    sOn = on;
+    if (on)
+    {
+        sPrevBubbles = gSavedSettings.getBOOL("UseChatBubbles");
+        sweep();
+        return;
+    }
+    auto held = std::move(sHeld);
+    sHeld.clear();
+    for (auto& [ptr, handle] : held)
+        if (LLFloater* f = handle.get(); f && !f->isDead())
+            f->setVisible(true);
+    if (sPrevBubbles)
+        gSavedSettings.setBOOL("UseChatBubbles", *sPrevBubbles);
+    sPrevBubbles.reset();
+}
+
+std::set<std::string> nameSet(const LLSD& list)
+{
+    std::set<std::string> out;
+    for (const auto& v : llsd::inArray(list))
+        out.insert(v.asString());
+    return out;
+}
+} // namespace streamui
+
 class IbashoAgentListener : public LLEventAPI
 {
 public:
@@ -453,6 +616,18 @@ public:
             "Replies {visible} (the state after any change).",
             &IbashoAgentListener::renderUI,
             llsd::map("reply", LLSD()));
+        add("streamUI",
+            "For showing the window to others: the UI draws as usual, minus anything that shows other people's\n"
+            "words: chat and IM floaters, nearby chat and IM toasts, chat bubbles, and notifications from or\n"
+            "about people (offers, friendship, teleports, group notices, payments, online/offline...).\n"
+            "Notifications still arrive and can be answered over LEAP; floaters held back reappear when it goes\n"
+            "off. Not saved: a restart starts with it off. Optional [\"on\"] bool sets it; [\"own_chat\"] (default\n"
+            "true) lets toasts of my own nearby chat lines show; [\"hide\"] / [\"show\"]: extra notification\n"
+            "names to hide / always show; [\"floaters\"]: extra floater names to hide (each list replaces the\n"
+            "previous one).\n"
+            "Replies {on, visible (the UI is drawn at all, see renderUI), own_chat, held: [what's held back]}.",
+            &IbashoAgentListener::streamUI,
+            llsd::map("reply", LLSD()));
         add("move",
             "Hold movement controls for [\"secs\"] (default 1, max 600), as held keys do but without needing\n"
             "keyboard focus; scripts that took controls (vehicles) see them like keys. [\"forward\"] -1..1\n"
@@ -490,6 +665,31 @@ private:
         if (data.has("visible") && data["visible"].asBoolean() != gPipeline.hasRenderDebugFeatureMask(ui))
             LLPipeline::toggleRenderDebugFeature(ui);
         response["visible"] = gPipeline.hasRenderDebugFeatureMask(ui);
+    }
+
+    void streamUI(const LLSD& data)
+    {
+        Response response(LLSD(), data);
+        if (data.has("own_chat"))
+            streamui::sOwnChat = data["own_chat"].asBoolean();
+        if (data.has("hide"))
+            streamui::sExtraHide = streamui::nameSet(data["hide"]);
+        if (data.has("show"))
+            streamui::sExtraShow = streamui::nameSet(data["show"]);
+        if (data.has("floaters"))
+            streamui::sExtraFloaters = streamui::nameSet(data["floaters"]);
+        if (data.has("on"))
+            streamui::setOn(data["on"].asBoolean());
+        else if (streamui::sOn)
+            streamui::sweep(); // options may have changed what should be held
+        response["on"] = streamui::sOn;
+        response["visible"] = gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI);
+        response["own_chat"] = streamui::sOwnChat;
+        LLSD held = LLSD::emptyArray();
+        for (auto& [ptr, handle] : streamui::sHeld)
+            if (LLFloater* f = handle.get())
+                held.append(streamui::describe(f));
+        response["held"] = held;
     }
 
     void balance(const LLSD& data)

@@ -115,6 +115,9 @@ LLFloater::click_callback LLFloater::sButtonCallbacks[BUTTON_COUNT] =
     LLFloater::onClickHelp      //BUTTON_HELP
 };
 
+// Ibasho: lets newview veto a floater becoming visible (IbashoAgent streamUI keeps other people's words off a window shown to others).
+std::function<bool(LLFloater*, bool)> gIbashoFloaterVisibility; // Ibasho
+
 LLMultiFloater* LLFloater::sHostp = NULL;
 bool            LLFloater::sQuitting = false; // Flag to prevent storing visibility controls while quitting
 
@@ -609,6 +612,7 @@ LLControlGroup* LLFloater::getControlGroup()
 
 void LLFloater::setVisible( bool visible )
 {
+    if (gIbashoFloaterVisibility) visible = gIbashoFloaterVisibility(this, visible); // Ibasho
     LLPanel::setVisible(visible); // calls onVisibilityChange()
     if( visible && mFirstLook )
     {
