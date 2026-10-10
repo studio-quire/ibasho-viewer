@@ -29,6 +29,7 @@
 // file include
 #define LLSELECTMGR_CPP
 #include "llselectmgr.h"
+#include "ibashohooks.h" // Ibasho
 #include "llmaterialmgr.h"
 
 // library includes
@@ -5927,6 +5928,7 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
     {
         LLUUID id;
         msg->getUUIDFast(_PREHASH_ObjectData, _PREHASH_ObjectID, id, i);
+        ibasho::onObjectProperties(msg, i); // Ibasho
 
         LLUUID creator_id;
         LLUUID owner_id;
@@ -6214,6 +6216,7 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
     }
 
     dialog_refresh_all();
+    ibasho::onObjectPropertiesFamily(msg); // Ibasho
 
     if (auto ws_server = LLScriptEditorWSServer::getServer())
     {

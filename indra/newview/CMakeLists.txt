@@ -754,6 +754,12 @@ set(viewer_SOURCE_FILES
     llxmlrpctransaction.cpp
     noise.cpp
     pipeline.cpp
+    # <Ibasho> LEAP APIs
+    ibashoagent.cpp
+    ibashocommon.cpp
+    ibashoim.cpp
+    ibashoobjects.cpp
+    # </Ibasho>
     )
 
 set(VIEWER_BINARY_NAME "secondlife-bin" CACHE STRING
@@ -1433,6 +1439,10 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     roles_constants.h
+    # <Ibasho> LEAP APIs
+    ibashocommon.h
+    ibashohooks.h
+    # </Ibasho>
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)

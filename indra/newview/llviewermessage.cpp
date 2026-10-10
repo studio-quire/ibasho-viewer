@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llviewermessage.h"
+#include "ibashohooks.h" // Ibasho
 
 // Linden libraries
 #include "llanimationstates.h"
@@ -4531,6 +4532,7 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
         gStatusBar->setLandCredit(credit);
         gStatusBar->setLandCommitted(committed);
     }
+    ibasho::onMoneyBalance(msg); // Ibasho
 
     if (desc.empty()
         || !gSavedSettings.getBOOL("NotifyMoneyChange"))

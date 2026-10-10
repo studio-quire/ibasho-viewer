@@ -11926,6 +11926,28 @@
       <key>Value</key>
       <real>20.0</real>
     </map>
+    <key>IbashoMaxPayment</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: largest single L$ payment the IbashoAgent pay API will send.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>500</integer>
+    </map>
+    <key>IbashoMaxSessionSpend</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: total L$ the IbashoAgent pay API may send per viewer session (0 = no session limit).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>TextureCameraBoost</key>
     <map>
       <key>Comment</key>

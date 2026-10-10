@@ -27,6 +27,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llviewerobjectlist.h"
+#include "ibashohooks.h" // Ibasho
 
 #include "message.h"
 #include "llfasttimer.h"
@@ -281,6 +282,7 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
         && update_type != OUT_TERSE_IMPROVED
         && objectp->mCreateSelected)
     {
+        ibasho::onObjectCreated(objectp); // Ibasho
         if ( LLToolMgr::getInstance()->getCurrentTool() != LLToolPie::getInstance() )
         {
             // LL_INFOS() << "DEBUG selecting " << objectp->mID << " "

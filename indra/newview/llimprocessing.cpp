@@ -27,6 +27,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llimprocessing.h"
+#include "ibashohooks.h" // Ibasho
 
 #include "llagent.h"
 #include "llappviewer.h"
@@ -1044,6 +1045,7 @@ void LLIMProcessing::processNewMessage(LLUUID from_id,
 
             // IDEVO Some messages have embedded resident names
             message = clean_name_from_task_im(message, from_group);
+            ibasho::onObjectIM(session_id, from_id, name, message, location); // Ibasho
 
             LLSD query_string;
             query_string["owner"] = from_id;

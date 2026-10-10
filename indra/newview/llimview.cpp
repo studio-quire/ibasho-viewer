@@ -27,6 +27,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llimview.h"
+#include "ibashohooks.h" // Ibasho
 
 #include "llavatarnamecache.h"  // IDEVO
 #include "llavataractions.h"
@@ -1967,6 +1968,7 @@ void LLIMModel::sendMessage(const std::string& utf8_text,
             (EInstantMessage)new_dialog,
             im_session_id);
         gAgent.sendReliableMessage();
+        ibasho::onOutgoingIM(im_session_id, other_participant_id, utf8_text, dialog); // Ibasho
     }
 
     bool is_group_chat = false;
@@ -3276,6 +3278,7 @@ void LLIMMgr::addMessage(
     if (!LLMuteList::getInstance()->isMuted(other_participant_id, LLMute::flagTextChat) && !skip_message)
     {
         LLIMModel::instance().addMessage(new_session_id, message_display_name, display_id, msg, true, is_region_msg, timestamp);
+        ibasho::onIncomingIM(new_session_id, display_id, message_display_name, msg, is_offline_msg, dialog, timestamp); // Ibasho
     }
 
     // Open conversation floater if offline messages are present
