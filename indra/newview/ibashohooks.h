@@ -26,6 +26,7 @@
 #ifndef LL_IBASHOHOOKS_H
 #define LL_IBASHOHOOKS_H
 
+#include "llcoord.h"
 #include "llinstantmessage.h"
 
 class LLMessageSystem;
@@ -51,6 +52,12 @@ namespace ibasho
     // An object we created/rezzed/duplicated arrived (it carried FLAGS_CREATE_SELECTED).
     void onObjectCreated(LLViewerObject* objectp);
     void onMoneyBalance(LLMessageSystem* msg);
+
+    // Mirror the IbashoSpectator setting into the window layer (real mouse/keyboard ignored); from
+    // LLViewerWindow's constructor, before the OS window is created.
+    void initSpectator();
+    // LLWindow mouse events from LEAP; while spectating, the window's cursor position follows them.
+    void onInjectedMouse(const LLCoordGL& pos);
 }
 
 #endif

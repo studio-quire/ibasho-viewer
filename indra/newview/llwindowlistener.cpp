@@ -43,6 +43,7 @@
 #include "stringize.h"
 #include "llclipboard.h"
 #include "lleditmenuhandler.h"
+#include "ibashohooks.h" // Ibasho
 #include <functional>
 #include <typeinfo>
 #include <map>
@@ -575,6 +576,7 @@ static void mouseEvent(const MouseFunc& func, const LLSD& request)
     // specified event is important enough, and its handling unclear enough,
     // to warrant a separate response attribute. Instead of deciding here to
     // make it a warning, or an error, let caller decide.
+    ibasho::onInjectedMouse(pos); // Ibasho: spectator mode: the app's cursor follows LEAP
     response["handled"] = func(pos, getMask(request));
 
     // On exiting this scope, response will send, tempfunc will restore the

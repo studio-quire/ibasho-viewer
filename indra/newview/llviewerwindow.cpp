@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llviewerwindow.h"
+#include "ibashohooks.h" // Ibasho
 
 
 // system library includes
@@ -2043,6 +2044,7 @@ LLViewerWindow::LLViewerWindow(const Params& p)
     U32 max_core_count = gSavedSettings.getU32("EmulateCoreCount");
     F32 max_gl_version = gSavedSettings.getF32("RenderMaxOpenGLVersion");
 
+    ibasho::initSpectator(); // Ibasho: before the window exists, so it never takes focus
     mWindow = LLWindowManager::createWindow(this,
         p.title, p.name, p.x, p.y, p.width, p.height, 0,
         p.fullscreen,

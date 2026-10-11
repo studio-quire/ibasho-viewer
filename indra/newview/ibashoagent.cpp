@@ -53,6 +53,8 @@
 #include "llviewermenufile.h"
 #include "llviewertexturelist.h"
 #include "llviewerwearable.h"
+#include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llwearabletype.h"
 #include "llparcel.h"
 #include "llregionflags.h"
@@ -77,6 +79,7 @@
 #include "pipeline.h"
 #include "message.h"
 
+#include <atomic>
 #include <map>
 #include <optional>
 #include <set>
@@ -84,6 +87,9 @@
 void send_lures(const LLSD& notification, const LLSD& response); // llviewermessage.cpp
 void handle_rebake_textures();                                  // llviewermenu.cpp
 extern std::function<bool(LLFloater*, bool)> gIbashoFloaterVisibility; // llfloater.cpp
+#if LL_WINDOWS
+extern std::atomic<bool> gIbashoSpectator; // llwindowwin32.cpp
+#endif
 
 using namespace LLAvatarAppearanceDefines;
 
@@ -628,6 +634,11 @@ public:
             "Replies {on, visible (the UI is drawn at all, see renderUI), own_chat, held: [what's held back]}.",
             &IbashoAgentListener::streamUI,
             llsd::map("reply", LLSD()));
+        add("spectator",
+            "Spectator mode: the real mouse and keyboard don't reach the viewer, clicks don't focus its window,\n"
+            "and the viewer never moves, hides or confines the real cursor; LEAP input works as usual.\n"
+            "[\"on\"] sets it (setting IbashoSpectator: on at every launch, not saved). Replies {on}.",
+            &IbashoAgentListener::spectator);
         add("move",
             "Hold movement controls for [\"secs\"] (default 1, max 600), as held keys do but without needing\n"
             "keyboard focus; scripts that took controls (vehicles) see them like keys. [\"forward\"] -1..1\n"
@@ -690,6 +701,14 @@ private:
             if (LLFloater* f = handle.get())
                 held.append(streamui::describe(f));
         response["held"] = held;
+    }
+
+    void spectator(const LLSD& data)
+    {
+        Response response(LLSD(), data);
+        if (data.has("on"))
+            gSavedSettings.setBOOL("IbashoSpectator", data["on"].asBoolean()); // initSpectator's signal applies it
+        response["on"] = gSavedSettings.getBOOL("IbashoSpectator");
     }
 
     void balance(const LLSD& data)
@@ -1296,3 +1315,35 @@ private:
 
 IbashoAgentListener sIbashoAgentListener;
 } // namespace
+
+// Spectator mode (2026-10-11, Claude Opus 5.5): the window layer drops real input (llwindowwin32.cpp); this keeps
+// its flag in step with the setting, which LEAP can change (IbashoAgent spectator, LLViewerControl). The window's
+// idea of where the cursor is (hover, tooltips) then follows LEAP's mouse events instead of the real pointer.
+void ibasho::initSpectator()
+{
+#if LL_WINDOWS
+    LLControlVariable* control = gSavedSettings.getControl("IbashoSpectator");
+    if (!control)
+        return;
+    gIbashoSpectator = control->getValue().asBoolean();
+    control->getSignal()->connect([](LLControlVariable*, const LLSD& value, const LLSD&)
+    {
+        bool on = value.asBoolean();
+        if (on == gIbashoSpectator)
+            return;
+        gIbashoSpectator = on;
+        // Wherever the real pointer last was is stale now: move the window's cursor off it, which ends any
+        // hover or tooltip there. Not the real pointer (the flag is already set).
+        if (on && gViewerWindow && gViewerWindow->getWindow())
+            gViewerWindow->getWindow()->setCursorPosition(LLCoordWindow(-1, -1));
+    });
+#endif
+}
+
+void ibasho::onInjectedMouse(const LLCoordGL& pos)
+{
+#if LL_WINDOWS
+    if (gIbashoSpectator && gViewerWindow && gViewerWindow->getWindow())
+        gViewerWindow->getWindow()->setCursorPosition(LLCoordWindow(pos.convert()));
+#endif
+}

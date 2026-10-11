@@ -63,6 +63,7 @@
 #include <future>
 #include <sstream>
 #include <utility>                  // std::pair
+#include <atomic> // Ibasho
 
 #include <d3d9.h>
 #include <d3d11.h>
@@ -189,6 +190,58 @@ static bool is_thread_from_current_process(DWORD thread_id)
     CloseHandle(thread_handle);
     return process_id == GetCurrentProcessId();
 }
+
+// <Ibasho> spectator mode (2026-10-11, Claude Opus 5.5)
+// While set (newview mirrors the IbashoSpectator setting into it), the person watching the window can't
+// affect the viewer: the agent drives it over LEAP, which calls the window callbacks directly, so dropping the
+// OS's mouse and keyboard messages leaves LEAP input untouched. Clicks in the client area don't activate the
+// window, the pointer over it stays an arrow, and the viewer doesn't move, hide, clip or capture the real
+// cursor. Moving, resizing, closing and activating it from the title bar or taskbar work as usual.
+std::atomic<bool> gIbashoSpectator{ false };
+
+// Returns true if the window proc should return *result without the viewer seeing the message.
+static bool ibasho_spectator_eats(HWND h_wnd, UINT u_msg, WPARAM w_param, LPARAM l_param, LRESULT* result)
+{
+    if (!gIbashoSpectator)
+    {
+        return false;
+    }
+    switch (u_msg)
+    {
+    case WM_MOUSEACTIVATE:
+        if (LOWORD(l_param) != HTCLIENT)
+        {
+            return false;
+        }
+        *result = MA_NOACTIVATE;
+        return true;
+    case WM_SETCURSOR:
+        if (LOWORD(l_param) != HTCLIENT)
+        {
+            return false;
+        }
+        while (ShowCursor(TRUE) < 0) {} // undo a hide from before spectating (mouselook)
+        SetCursor(LoadCursor(NULL, IDC_ARROW));
+        *result = TRUE;
+        return true;
+    case WM_MOUSEMOVE: case WM_MOUSELEAVE: case WM_MOUSEWHEEL: case WM_MOUSEHWHEEL:
+    case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK:
+    case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK:
+    case WM_MBUTTONDOWN: case WM_MBUTTONUP: case WM_MBUTTONDBLCLK:
+    case WM_XBUTTONDOWN: case WM_XBUTTONUP: case WM_XBUTTONDBLCLK:
+    case WM_INPUT:
+    case WM_KEYDOWN: case WM_KEYUP: case WM_SYSKEYDOWN: case WM_SYSKEYUP:
+    case WM_CHAR: case WM_SYSCHAR: case WM_DEADCHAR: case WM_SYSDEADCHAR: case WM_UNICHAR:
+    case WM_IME_STARTCOMPOSITION: case WM_IME_COMPOSITION: case WM_IME_ENDCOMPOSITION:
+    case WM_IME_CHAR: case WM_IME_REQUEST:
+        // DefWindowProc keeps the system's own handling (Alt+F4, raw input cleanup)
+        *result = DefWindowProc(h_wnd, u_msg, w_param, l_param);
+        return true;
+    default:
+        return false;
+    }
+}
+// </Ibasho>
 
 HGLRC SafeCreateContext(HDC &hdc)
 {
@@ -951,6 +1004,7 @@ LLWindowWin32::~LLWindowWin32()
 void LLWindowWin32::show()
 {
     LL_DEBUGS("Window") << "Setting window to show" << LL_ENDL;
+    if (gIbashoSpectator) { ShowWindow(mWindowHandle, SW_SHOWNA); return; } // Ibasho spectator: don't take focus
     ShowWindow(mWindowHandle, SW_SHOW);
     SetForegroundWindow(mWindowHandle);
     SetFocus(mWindowHandle);
@@ -2090,6 +2144,8 @@ bool LLWindowWin32::setCursorPosition(const LLCoordWindow position)
     // hover/picking to function).
     mCallbacks->handleMouseMove(this, position.convert(), (MASK)0);
 
+    if (gIbashoSpectator) return true; // Ibasho spectator: the app's cursor moves, the real one stays
+
     // actually set the cursor position on the window thread
     mWindowThread->post([=]()
         {
@@ -2128,6 +2184,7 @@ void LLWindowWin32::hideCursor()
 {
     ASSERT_MAIN_THREAD();
 
+    if (!gIbashoSpectator) // Ibasho spectator: the app thinks it's hidden, the real cursor stays visible
     mWindowThread->post([=]()
         {
             while (ShowCursor(FALSE) >= 0)
@@ -2270,6 +2327,7 @@ void LLWindowWin32::updateCursor()
     {
         mCurrentCursor = mNextCursor;
         auto nextCursor = mCursor[mNextCursor];
+        if (!gIbashoSpectator) // Ibasho spectator: the real pointer stays an arrow
         mWindowThread->post([=]()
             {
                 SetCursor(nextCursor);
@@ -2284,6 +2342,7 @@ ECursorType LLWindowWin32::getCursor() const
 
 void LLWindowWin32::captureMouse()
 {
+    if (gIbashoSpectator) return; // Ibasho spectator
     SetCapture(mWindowHandle);
 }
 
@@ -2403,6 +2462,8 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
         (*ptr)();
         return 0;
     }
+
+    if (LRESULT eaten; ibasho_spectator_eats(h_wnd, u_msg, w_param, l_param, &eaten)) return eaten; // Ibasho
 
     // Ignore clicks not originated in the client area, i.e. mouse-up events not preceded with a WM_LBUTTONDOWN.
     // This helps prevent avatar walking after maximizing the window by double-clicking the title bar.
@@ -3839,6 +3900,7 @@ void LLWindowWin32::setMouseClipping( bool b )
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_WIN32;
     ASSERT_MAIN_THREAD();
+    if (b && gIbashoSpectator) return; // Ibasho spectator: never confine the real cursor
     if( b != mIsMouseClipping )
     {
         bool success = false;
@@ -4379,6 +4441,7 @@ void *LLWindowWin32::getPlatformWindow()
 
 void LLWindowWin32::bringToFront()
 {
+    if (gIbashoSpectator) return; // Ibasho spectator
     mWindowThread->post([=]()
         {
             BringWindowToTop(mWindowHandle);
@@ -4388,6 +4451,7 @@ void LLWindowWin32::bringToFront()
 // set (OS) window focus back to the client
 void LLWindowWin32::focusClient()
 {
+    if (gIbashoSpectator) return; // Ibasho spectator
     mWindowThread->post([=]()
         {
             SetFocus(mWindowHandle);
@@ -4858,6 +4922,7 @@ static LLWString find_context(const LLWString & wtext, S32 focus, S32 focus_leng
 LLWindowCallbacks::DragNDropResult LLWindowWin32::completeDragNDropRequest( const LLCoordGL gl_coord, const MASK mask, LLWindowCallbacks::DragNDropAction action, const std::string url )
 {
     ASSERT_MAIN_THREAD();
+    if (gIbashoSpectator) return LLWindowCallbacks::DND_NONE; // Ibasho spectator: no file drops
     return mCallbacks->handleDragNDrop( this, gl_coord, mask, action, url );
 }
 

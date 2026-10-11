@@ -11937,6 +11937,17 @@
       <key>Value</key>
       <integer>500</integer>
     </map>
+    <key>IbashoSpectator</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: ignore the real mouse and keyboard (LEAP input still works); clicks don't focus the window. Not saved, so every launch starts on.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>IbashoMaxSessionSpend</key>
     <map>
       <key>Comment</key>
