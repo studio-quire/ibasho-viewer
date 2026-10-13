@@ -52,6 +52,7 @@
 #include "gltfscenemanager.h"
 
 #include "llenvironment.h"
+#include "ibashohide.h" // Ibasho
 
 bool LLDrawPoolAlpha::sShowDebugAlpha = false;
 
@@ -649,7 +650,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, bool depth_only, bool rigged)
             for (LLSpatialGroup::drawmap_elem_t::iterator k = draw_info.begin(); k != draw_info.end(); ++k)
             {
                 LLDrawInfo& params = **k;
-                if ((bool)params.mAvatar != rigged)
+                if ((bool)params.mAvatar != rigged || ibasho::hideDrawInfoNow(&params)) // Ibasho
                 {
                     continue;
                 }

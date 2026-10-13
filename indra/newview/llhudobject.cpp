@@ -39,6 +39,7 @@
 #include "llhudeffectresetskeleton.h"
 #include "llhudnametag.h"
 #include "llvoicevisualizer.h"
+#include "ibashohide.h" // Ibasho
 
 #include "llagent.h"
 
@@ -289,7 +290,7 @@ void LLHUDObject::renderAll()
         {
             sHUDObjects.erase(cur_it);
         }
-        else if (hud_objp->isVisible())
+        else if (hud_objp->isVisible() && !ibasho::hideObjectNow(hud_objp->getSourceObject())) // Ibasho
         {
             hud_objp->render();
         }

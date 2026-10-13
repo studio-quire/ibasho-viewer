@@ -52,6 +52,7 @@
 #include "llviewerpartsim.h"
 #include "llviewercontrol.h" // for gSavedSettings
 #include "llviewertexturelist.h"
+#include "ibashohide.h" // Ibasho
 
 static U32 sShaderLevel = 0;
 
@@ -376,6 +377,13 @@ void LLDrawPoolAvatar::renderShadow(S32 pass)
     {
         return;
     }
+
+    // <Ibasho>
+    if (ibasho::hideAvatarNow(avatarp))
+    {
+        return;
+    }
+    // </Ibasho>
 
     LLVOAvatar::AvatarOverallAppearance oa = avatarp->getOverallAppearance();
     bool impostor = !LLPipeline::sImpostorRender && avatarp->isImpostor();
@@ -705,6 +713,13 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
     {
         return;
     }
+
+    // <Ibasho>
+    if (!single_avatar && ibasho::hideAvatarNow(avatarp))
+    {
+        return;
+    }
+    // </Ibasho>
 
     if (!single_avatar && !avatarp->isFullyLoaded() )
     {

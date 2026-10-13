@@ -43,6 +43,7 @@
 #include "llviewerregion.h"
 #include "pipeline.h"
 #include "llspatialpartition.h"
+#include "ibashohide.h" // Ibasho
 
 extern U64MicrosecondsImplicit gFrameTime;
 
@@ -853,6 +854,8 @@ void LLParticlePartition::getGeometry(LLSpatialGroup* group)
 
         object->getBlendFunc(facep->getTEOffset(), bf_src, bf_dst);
 
+        bool hidden = ibasho::hideParticle(object, facep->getTEOffset()); // Ibasho
+
 
         if (idx >= 0)
         {
@@ -862,7 +865,8 @@ void LLParticlePartition::getGeometry(LLSpatialGroup* group)
                 info->mHasGlow == has_glow &&
                 info->mFullbright == fullbright &&
                 info->mBlendFuncDst == bf_dst &&
-                info->mBlendFuncSrc == bf_src)
+                info->mBlendFuncSrc == bf_src && // Ibasho
+                ibasho::isHiddenDrawInfo(info) == hidden) // Ibasho
             {
                 if (draw_vec[idx]->mEnd == facep->getGeomIndex()-1)
                 {
@@ -892,6 +896,12 @@ void LLParticlePartition::getGeometry(LLSpatialGroup* group)
             info->mBlendFuncDst = bf_dst;
             info->mBlendFuncSrc = bf_src;
             info->mHasGlow = has_glow;
+            // <Ibasho>
+            if (hidden)
+            {
+                ibasho::markHiddenDrawInfo(info);
+            }
+            // </Ibasho>
             draw_vec.push_back(info);
             //for alpha sorting
             facep->setDrawInfo(info);

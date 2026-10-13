@@ -25,6 +25,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "ibashocommon.h"
 #include "ibashohooks.h"
+#include "ibashohide.h"
 
 #include "llagent.h"
 #include "llagentbenefits.h"
@@ -76,6 +77,12 @@
 #include "llviewerregion.h"
 #include "llvoavatarself.h"
 #include "llworld.h"
+#include "llcharacter.h"
+#include "lldrawable.h"
+#include "llspatialpartition.h"
+#include "llviewerpartsim.h"
+#include "llviewerpartsource.h"
+#include "llvopartgroup.h"
 #include "pipeline.h"
 #include "message.h"
 
@@ -83,6 +90,9 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <unordered_set>
+
+extern bool gSnapshot; // llviewerdisplay.cpp: the current display() is for a snapshot
 
 void send_lures(const LLSD& notification, const LLSD& response); // llviewermessage.cpp
 void handle_rebake_textures();                                  // llviewermenu.cpp
@@ -666,6 +676,18 @@ public:
             "exists; errors carry the floater's [\"log\"].",
             [](const LLSD& data) { ibasho::uploadMesh(data); },
             llsd::map("path", LLSD()));
+        add("hideAvatars",
+            "Don't draw chosen avatars in the window (so not on a screen capture of it): body, attachments (rigged\n"
+            "too), their attached lights and particles, name tag and hover text. Snapshots still show them unless\n"
+            "[\"in_snapshots\"] is true. [\"mode\"]: \"off\", \"list\" (hide [\"ids\"]) or \"all_except\" (hide\n"
+            "everyone but me and [\"except\"], newcomers included). Each list given replaces the last; both are\n"
+            "kept across mode changes. Not saved: a restart starts with it off. Sounds are untouched.\n"
+            "Replies as getHidden, plus [\"grew\"]: whether anyone may have become hidden by this call.",
+            [](const LLSD& data) { ibasho::hideAvatars(data); });
+        add("getHidden",
+            "Avatar hiding state: {mode, ids, except, in_snapshots, hidden_now: [avatar ids hidden at the\n"
+            "moment], shown_now: [the other avatars the viewer knows of, not me]}.",
+            [](const LLSD& data) { ibasho::getHidden(data); });
     }
 
 private:
@@ -1346,4 +1368,206 @@ void ibasho::onInjectedMouse(const LLCoordGL& pos)
     if (gIbashoSpectator && gViewerWindow && gViewerWindow->getWindow())
         gViewerWindow->getWindow()->setCursorPosition(LLCoordWindow(pos.convert()));
 #endif
+}
+
+// hideAvatars (2026-10-12, Claude Opus 5.5): avatar hiding in the window only; see ibashohide.h for where it hooks in.
+bool ibasho::gHideActive = false;
+
+namespace
+{
+namespace hide
+{
+enum class Mode { off, list, all_except };
+Mode sMode = Mode::off;
+std::unordered_set<LLUUID> sIds;    // list mode: hide these
+std::unordered_set<LLUUID> sExcept; // all_except mode: hide everyone but me and these
+bool sInSnapshots = false;          // hide in snapshots too (default: snapshots show everyone)
+std::unordered_set<const LLDrawInfo*> sParticleInfos;
+
+const char* modeName(Mode m)
+{
+    return m == Mode::list ? "list" : m == Mode::all_except ? "all_except" : "off";
+}
+
+bool hidden(const LLVOAvatar* av)
+{
+    if (!av || av->isSelf() || av->isUIAvatar() || av->isDead())
+        return false;
+    if (av->isControlAvatar())
+    { // animesh goes with the avatar wearing it; animesh rezzed in-world stays
+        const LLVOAvatar* wearer = av->getAttachedAvatar();
+        return wearer && hidden(wearer);
+    }
+    const LLUUID& id = av->getID();
+    if (id == gAgentID)
+        return false;
+    if (sMode == Mode::list)
+        return sIds.count(id) > 0;
+    return sMode == Mode::all_except && sExcept.count(id) == 0;
+}
+
+// The avatar itself, or the avatar a prim is attached to: an attachment's root has its avatar as parent. (An
+// avatar sitting on an object is the object's child, not the other way round, so seats don't count.)
+const LLVOAvatar* wearer(const LLViewerObject* obj)
+{
+    for (int depth = 0; obj && depth < 256; ++depth)
+    {
+        if (obj->isAvatar())
+            return (const LLVOAvatar*)obj;
+        obj = (const LLViewerObject*)obj->getParent();
+    }
+    return nullptr;
+}
+
+// Renders for the window (incl. its shadows, reflections, mirrors) skip hidden avatars; snapshots and the
+// impostor renders (which make a texture, not the frame) draw them.
+bool thisRender()
+{
+    return (sInSnapshots || !gSnapshot) && !LLPipeline::sImpostorRender;
+}
+
+std::unordered_set<LLUUID> idSet(const LLSD& list)
+{
+    std::unordered_set<LLUUID> out;
+    for (const auto& v : llsd::inArray(list))
+        if (v.asUUID().notNull())
+            out.insert(v.asUUID());
+    return out;
+}
+
+LLSD idArray(const std::unordered_set<LLUUID>& ids)
+{
+    LLSD out = LLSD::emptyArray();
+    for (const auto& id : ids)
+        out.append(id);
+    return out;
+}
+
+LLSD describe()
+{
+    LLSD out = llsd::map("mode", modeName(sMode), "ids", idArray(sIds), "except", idArray(sExcept),
+                         "in_snapshots", sInSnapshots);
+    LLSD hidden_now = LLSD::emptyArray(), shown_now = LLSD::emptyArray();
+    for (LLCharacter* c : LLCharacter::sInstances)
+    {
+        LLVOAvatar* av = (LLVOAvatar*)c;
+        if (av->isDead() || av->isSelf() || av->isUIAvatar() || av->isControlAvatar())
+            continue;
+        (ibasho::gHideActive && hidden(av) ? hidden_now : shown_now).append(av->getID());
+    }
+    out["hidden_now"] = hidden_now; // avatars the viewer knows of, other than me
+    out["shown_now"] = shown_now;
+    return out;
+}
+} // namespace hide
+} // namespace
+
+bool ibasho::hideAvatarSlow(const LLVOAvatar* av)
+{
+    return hide::thisRender() && hide::hidden(av);
+}
+
+bool ibasho::hideObjectSlow(LLViewerObject* obj)
+{
+    return obj && hide::thisRender() && hide::hidden(hide::wearer(obj));
+}
+
+bool ibasho::hideGroupSlow(LLSpatialGroup* group)
+{
+    if (!group || !hide::thisRender())
+        return false;
+    LLSpatialPartition* part = group->getSpatialPartition();
+    LLSpatialBridge* bridge = part ? part->asBridge() : nullptr;
+    if (!bridge || !bridge->mDrawable)
+        return false;
+    LLViewerObject* root = bridge->mDrawable->getVObj().get();
+    return root && root->isAttachment() && hide::hidden(hide::wearer(root));
+}
+
+bool ibasho::hideParticleSlow(LLViewerObject* part_group, S32 idx)
+{
+    LLVOPartGroup* vo = dynamic_cast<LLVOPartGroup*>(part_group);
+    LLViewerPartGroup* group = vo ? vo->getViewerPartGroup() : nullptr;
+    if (!group || idx < 0 || idx >= group->getCount())
+        return false;
+    LLViewerPart* part = group->mParticles[idx];
+    if (!part || part->mPartSourcep.isNull())
+        return false;
+    return hide::hidden(hide::wearer(part->mPartSourcep->mSourceObjectp.get()));
+}
+
+bool ibasho::isHiddenDrawInfoSlow(const LLDrawInfo* info)
+{
+    return !hide::sParticleInfos.empty() && hide::sParticleInfos.count(info) > 0;
+}
+
+bool ibasho::hideDrawInfoSlow(const LLDrawInfo* info)
+{
+    return isHiddenDrawInfoSlow(info) && hide::thisRender();
+}
+
+void ibasho::markHiddenDrawInfo(const LLDrawInfo* info)
+{
+    hide::sParticleInfos.insert(info);
+}
+
+void ibasho::forgetDrawInfoSlow(const LLDrawInfo* info)
+{
+    if (!hide::sParticleInfos.empty())
+        hide::sParticleInfos.erase(info);
+}
+
+void ibasho::hideAvatars(const LLSD& request)
+{
+    const hide::Mode old_mode = hide::sMode;
+    const auto old_ids = hide::sIds;
+    const auto old_except = hide::sExcept;
+    if (request.has("mode"))
+    {
+        std::string mode = request["mode"].asString();
+        if (mode == "off")
+            hide::sMode = hide::Mode::off;
+        else if (mode == "list")
+            hide::sMode = hide::Mode::list;
+        else if (mode == "all_except")
+            hide::sMode = hide::Mode::all_except;
+        else
+        {
+            sendReply(llsd::map("error", "mode must be off, list or all_except"), request);
+            return;
+        }
+    }
+    if (request.has("ids"))
+        hide::sIds = hide::idSet(request["ids"]);
+    if (request.has("except"))
+        hide::sExcept = hide::idSet(request["except"]);
+    if (request.has("in_snapshots"))
+        hide::sInSnapshots = request["in_snapshots"].asBoolean();
+    gHideActive = hide::sMode != hide::Mode::off;
+    if (!gHideActive)
+        hide::sParticleInfos.clear(); // unmarked infos get no forget calls while off
+
+    // Whether anyone may have become hidden: a frame from before this call may still be on its way to a
+    // capture, so a caller about to show the window waits a moment.
+    bool grew = false;
+    if (hide::sMode == hide::Mode::list)
+    {
+        grew = old_mode != hide::Mode::list;
+        for (const auto& id : hide::sIds)
+            grew = grew || !old_ids.count(id);
+    }
+    else if (hide::sMode == hide::Mode::all_except)
+    {
+        grew = old_mode != hide::Mode::all_except;
+        for (const auto& id : old_except)
+            grew = grew || !hide::sExcept.count(id);
+    }
+    LLSD reply = hide::describe();
+    reply["grew"] = grew;
+    sendReply(reply, request);
+}
+
+void ibasho::getHidden(const LLSD& request)
+{
+    sendReply(hide::describe(), request);
 }

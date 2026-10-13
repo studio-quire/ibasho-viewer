@@ -53,6 +53,7 @@
 #include "llvolumemgr.h"
 #include "llviewershadermgr.h"
 #include "llcontrolavatar.h"
+#include "ibashohide.h" // Ibasho
 
 extern bool gShiftFrame;
 
@@ -3838,6 +3839,7 @@ LLDrawInfo::LLDrawInfo(U16 start, U16 end, U32 count, U32 offset,
 
 LLDrawInfo::~LLDrawInfo()
 {
+    ibasho::forgetDrawInfo(this); // Ibasho
     if (gDebugGL)
     {
         gPipeline.checkReferences(this);

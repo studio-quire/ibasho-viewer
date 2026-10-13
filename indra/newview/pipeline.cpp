@@ -121,6 +121,7 @@
 
 #include "SMAAAreaTex.h"
 #include "SMAASearchTex.h"
+#include "ibashohide.h" // Ibasho
 #include "llerror.h"
 
 #if LL_CLANG
@@ -3632,6 +3633,13 @@ void LLPipeline::postSort(LLCamera &camera)
             continue;
         }
 
+        // <Ibasho>
+        if (ibasho::hideGroupNow(group))
+        {
+            continue;
+        }
+        // </Ibasho>
+
         if (group->hasState(LLSpatialGroup::NEW_DRAWINFO) && group->hasState(LLSpatialGroup::GEOM_DIRTY) && !gCubeSnapshot)
         {  // no way this group is going to be drawable without a rebuild
             group->rebuildGeom();
@@ -3649,6 +3657,12 @@ void LLPipeline::postSort(LLCamera &camera)
             {
                 LLDrawInfo *info = *k;
 
+                // <Ibasho>
+                if (ibasho::hideDrawInfoNow(info))
+                {
+                    continue;
+                }
+                // </Ibasho>
                 sCull->pushDrawInfo(j->first, info);
                 if (!sShadowRender && !sReflectionRender && !gCubeSnapshot)
                 {
@@ -5856,7 +5870,7 @@ void LLPipeline::setupHWLights()
 
             if (light->isAttachment())
             {
-                if (!sRenderAttachedLights)
+                if (!sRenderAttachedLights || ibasho::hideObjectNow(light)) // Ibasho
                 {
                     continue;
                 }
@@ -8710,7 +8724,7 @@ void LLPipeline::renderDeferredLighting()
 
                     if (volume->isAttachment())
                     {
-                        if (!sRenderAttachedLights)
+                        if (!sRenderAttachedLights || ibasho::hideObjectNow(volume)) // Ibasho
                         {
                             continue;
                         }
