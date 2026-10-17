@@ -41,9 +41,13 @@
 #include "llviewerinventory.h"
 #include "llviewertexteditor.h"
 
-// Does what a resident does in the floater: pick the file for the high LOD (lower LODs and physics
-// as the floater generates them by default), press "Calculate weights & fee", then "Upload". It's a
-// friend of LLFloaterModelPreview so it can call the same handlers the buttons do.
+#include <algorithm>
+#include <deque>
+
+// Does what a resident does in the floater: pick the file for the high LOD, then (if given) a file for
+// each lower LOD and the physics, one at a time as "Load from file" does (the rest as the floater
+// generates them by default), press "Calculate weights & fee", then "Upload". It's a friend of
+// LLFloaterModelPreview so it can call the same handlers the buttons do (LOD files added 2026-10-17).
 class IbashoMeshAccess
 {
 public:
@@ -53,15 +57,78 @@ public:
     {
         LLHandle<LLFloater> floater;
         Stage stage = LOADING;
+        std::deque<std::pair<S32, std::string>> lod_files; // still to load, after the high LOD
+        std::vector<S32> from_file;                        // LODs given as files
+        S32 loading_lod = LLModel::LOD_HIGH;
+        S32 high_tris = -1;
         bool quote = false, keep_open = false;
         S32 max_cost = -1;
         S32 ready_frames = 0;
         time_t start = 0;
         std::string name;
         LLUUID folder_id;
-        LLSD fee;
+        LLSD fee, lods;
     };
     typedef std::shared_ptr<State> state_t;
+
+    static const char* lodName(S32 lod)
+    {
+        static const char* names[] = { "lowest", "low", "med", "high", "physics" };
+        return lod >= 0 && lod < LLModel::NUM_LODS ? names[lod] : "?";
+    }
+
+    static bool modelFile(const std::string& path)
+    {
+        std::string ext = gDirUtilp->getExtension(path);
+        return ext == "dae" || ext == "gltf" || ext == "glb";
+    }
+
+    // The floater pairs each high-LOD object with a model of the same name in each LOD's file. If none
+    // matches, it quietly falls back to a model from a higher LOD (or no physics), so check that every
+    // LOD given as a file is really what will be uploaded.
+    static std::string checkFileLods(const state_t& s, LLModelPreview* mp)
+    {
+        for (S32 lod : s->from_file)
+        {
+            const auto& loaded = mp->mModel[lod];
+            for (const LLModelInstance& inst : mp->mUploadData)
+            {
+                const LLModel* used = inst.mLOD[lod].get();
+                bool ok = used && std::any_of(loaded.begin(), loaded.end(),
+                                              [used](const LLPointer<LLModel>& m) { return m.get() == used; });
+                if (!ok)
+                    return "the " + std::string(lodName(lod)) + " file has no object matching \"" + inst.mLabel +
+                           "\" in the high LOD (give it the same object name); the floater would have used " +
+                           (used ? "\"" + used->mLabel + "\"" : std::string("nothing"));
+            }
+        }
+        return std::string();
+    }
+
+    static S32 baseTris(LLModelPreview* mp)
+    {
+        S32 tris = 0;
+        for (const auto& m : mp->mBaseModel)
+            if (m.notNull())
+                tris += m->getNumTriangles();
+        return tris;
+    }
+
+    static LLSD lodSummary(const state_t& s, LLModelPreview* mp)
+    {
+        LLSD lods = LLSD::emptyMap();
+        for (S32 lod = 0; lod < LLModel::NUM_LODS; ++lod)
+        {
+            S32 tris = 0;
+            for (const LLModelInstance& inst : mp->mUploadData)
+                if (inst.mLOD[lod].notNull())
+                    tris += inst.mLOD[lod]->getNumTriangles();
+            bool file = lod == LLModel::LOD_HIGH ||
+                        std::find(s->from_file.begin(), s->from_file.end(), lod) != s->from_file.end();
+            lods[lodName(lod)] = llsd::map("tris", tris, "from", file ? "file" : "floater");
+        }
+        return lods;
+    }
 
     static LLFloaterModelPreview* floater(const state_t& s)
     {
@@ -136,9 +203,24 @@ public:
         const std::string path = data["path"].asString();
         if (!gDirUtilp->fileExists(path))
             return reply_error("no such file: " + path);
-        std::string ext = gDirUtilp->getExtension(path);
-        if (ext != "dae" && ext != "gltf" && ext != "glb")
+        if (!modelFile(path))
             return reply_error("the model floater reads .dae, .gltf and .glb");
+        std::deque<std::pair<S32, std::string>> lod_files;
+        static const std::pair<const char*, S32> lod_keys[] = { { "lod_med", LLModel::LOD_MEDIUM },
+                                                                 { "lod_low", LLModel::LOD_LOW },
+                                                                 { "lod_lowest", LLModel::LOD_IMPOSTOR },
+                                                                 { "physics", LLModel::LOD_PHYSICS } };
+        for (const auto& [key, lod] : lod_keys)
+        {
+            if (!data.has(key) || data[key].asString().empty())
+                continue;
+            std::string file = data[key].asString();
+            if (!gDirUtilp->fileExists(file))
+                return reply_error(std::string(key) + ": no such file: " + file);
+            if (!modelFile(file))
+                return reply_error(std::string(key) + ": the model floater reads .dae, .gltf and .glb");
+            lod_files.emplace_back(lod, file);
+        }
         LLUUID folder_id = data["folder_id"].asUUID();
         if (folder_id.notNull() && !gInventory.getCategory(folder_id))
             return reply_error("no such folder");
@@ -157,6 +239,9 @@ public:
         s->max_cost = data.has("max_cost") ? data["max_cost"].asInteger() : -1;
         s->start = time_corrected();
         s->folder_id = folder_id;
+        s->lod_files = lod_files;
+        for (const auto& lf : lod_files)
+            s->from_file.push_back(lf.first);
 
         fmp->setUploadDestination(folder_id);
         if (data.has("name"))
@@ -194,11 +279,40 @@ public:
                 return false;
             }
             if (mp->getLoadState() >= LLModelLoader::ERROR_PARSING)
-                return fail(reply, s, "the model didn't load (loader state " + std::to_string(mp->getLoadState()) + ")");
+                return fail(reply, s, std::string(mp->getLoadState() == LLModelLoader::ERROR_MATERIALS
+                                                      ? "the LODs don't fit together (materials or object names; see log)"
+                                                      : "the model didn't load") +
+                                          " after loading the " + lodName(s->loading_lod) + " file (loader state " +
+                                          std::to_string(mp->getLoadState()) + ")");
             // LOD generation continues over idle frames after the load; wait until it's been quiet a while.
             s->ready_frames = mp->lodsReady() ? s->ready_frames + 1 : 0;
             if (s->ready_frames < 10)
                 return false;
+            if (s->high_tris < 0)
+                s->high_tris = baseTris(mp);
+            else if (baseTris(mp) != s->high_tris) // a file with a different object count replaces the high LOD
+                return fail(reply, s, std::string("the ") + lodName(s->loading_lod) +
+                                          " file doesn't have the same objects as the high LOD, so the floater "
+                                          "replaced the high LOD with it");
+            if (!s->lod_files.empty())
+            {
+                // Like picking "Load from file" for that LOD and then the file; one load at a time.
+                auto [lod, file] = s->lod_files.front();
+                s->lod_files.pop_front();
+                s->loading_lod = lod;
+                s->ready_frames = 0;
+                fmp->setCtrlLoadFromFile(lod);
+                fmp->loadModel(lod, file);
+                return false;
+            }
+            mp->rebuildUploadData(); // the calculate button does this too; check the result first
+            if (mp->getLoadState() >= LLModelLoader::ERROR_PARSING)
+                return fail(reply, s, "the floater rejected the model (loader state " +
+                                          std::to_string(mp->getLoadState()) + "; see log)");
+            std::string mismatch = checkFileLods(s, mp);
+            if (!mismatch.empty())
+                return fail(reply, s, mismatch);
+            s->lods = lodSummary(s, mp);
             s->name = fmp->getChild<LLLineEditor>("description_form")->getText();
             fmp->onClickCalculateBtn();
             s->stage = CALCULATING;
@@ -217,6 +331,7 @@ public:
             reply["name"] = s->name;
             reply["cost"] = cost;
             reply["weights"] = weights(s->fee);
+            reply["lods"] = s->lods;
             std::string why_not = refusal(s, cost);
             if (!fmp->mHasUploadPerm)
                 why_not = "this account may not upload mesh (the region's MeshUploadFlag check said no)";
@@ -260,6 +375,7 @@ public:
             reply["cost"] = s->fee["upload_price"];
             reply["charged"] = s->fee["upload_price"];
             reply["weights"] = weights(s->fee);
+            reply["lods"] = s->lods;
             return true;
         }
         }

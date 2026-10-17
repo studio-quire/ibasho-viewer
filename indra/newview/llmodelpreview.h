@@ -268,6 +268,7 @@ protected:
     friend class LLFloaterModelPreview;
     friend class LLFloaterModelPreview::DecompRequest;
     friend class LLPhysicsDecomp;
+    friend class IbashoMeshAccess; // Ibasho: ibashomesh.cpp checks which LOD models the upload uses
 
     LLFloater*  mFMP;
 

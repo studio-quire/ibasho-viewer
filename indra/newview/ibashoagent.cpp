@@ -670,10 +670,13 @@ public:
             "\"Calculate weights & fee\", then \"Upload\". Optional [\"name\"] (default: from the file),\n"
             "[\"scale\"] (import scale), [\"textures\"] (also upload its textures; costs more), [\"folder_id\"]\n"
             "(default Objects), [\"timeout\"] (s, default 180), [\"keep_open\"] (leave the floater open).\n"
+            "[\"lod_med\"], [\"lod_low\"], [\"lod_lowest\"], [\"physics\"]: model files for those LODs (absolute\n"
+            "paths), loaded after the high LOD as the floater's \"Load from file\" does; each file's objects must\n"
+            "have the high LOD's object names (optionally with _LOD2/_LOD1/_LOD0/_PHYS).\n"
             "Refused if the fee is over [\"max_cost\"], IbashoMaxUploadCost, or the pay caps. [\"quote\"]: stop\n"
             "after calculating. Replies {name, cost, weights {land_impact, streaming, physics, server,\n"
-            "price_breakdown}, refusal?} for a quote, else adds {item_id, asset_id, charged} once the item\n"
-            "exists; errors carry the floater's [\"log\"].",
+            "price_breakdown}, lods {high|med|low|lowest|physics: {tris, from}}, refusal?} for a quote, else\n"
+            "adds {item_id, asset_id, charged} once the item exists; errors carry the floater's [\"log\"].",
             [](const LLSD& data) { ibasho::uploadMesh(data); },
             llsd::map("path", LLSD()));
         add("hideAvatars",
