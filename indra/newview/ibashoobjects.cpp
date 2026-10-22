@@ -1068,10 +1068,33 @@ std::shared_ptr<PendingCreate> newPending(const LLSD& modify, const LLVector3& w
     return pending;
 }
 
+// We ask for new objects create-selected (so they can be told apart), which makes the region hold them
+// selected by us. Outside the edit tool the viewer never selects them locally, so it never sends the
+// deselect, and on the Second Life grid a selected physical object stays frozen. Tell the region we're
+// done with it.
+void deselectOnRegion(LLViewerObject* o)
+{
+    LLViewerRegion* region = o->getRegion();
+    if (!region || o->isSelected())
+        return; // selected locally (edit tool open): the selection manager deselects it in time
+    LLMessageSystem* msg = gMessageSystem;
+    msg->newMessageFast(_PREHASH_ObjectDeselect);
+    packAgent(msg);
+    msg->nextBlockFast(_PREHASH_ObjectData);
+    msg->addU32Fast(_PREHASH_ObjectLocalID, o->getLocalID());
+    for (const auto& child : o->getChildren())
+    {
+        msg->nextBlockFast(_PREHASH_ObjectData);
+        msg->addU32Fast(_PREHASH_ObjectLocalID, child->getLocalID());
+    }
+    msg->sendReliable(region->getHost());
+}
+
 void claim(const std::shared_ptr<PendingCreate>& pending, LLViewerObject* o)
 {
     pending->created = o->getID();
     sClaimed.insert(o->getID());
+    deselectOnRegion(o);
     LLSD ev = llsd::map("id", o->getID(), "local_id", (LLSD::Integer)o->getLocalID(),
                         "pos", ll_sd_from_vector3(o->getPositionRegion()), "requested", true);
     LLSD mod = pending->modify;
