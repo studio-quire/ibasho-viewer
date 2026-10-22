@@ -664,6 +664,13 @@ public:
         add("stop",
             "Stop the current move now. Replies {was_moving, pos, ...} (the move_done info if it was moving).",
             [](const LLSD& data) { ibasho::stopMove(data); });
+        add("probeGround",
+            "What's underfoot at [\"points\"] [[x, y], ...] (region coordinates, at most 256): replies {feet (my\n"
+            "feet's height), points: [{terrain, water, hit}]}. hit: the highest object surface under the point\n"
+            "(objects the viewer has loaded, invisible ones included), casting down from [\"top\"] (default\n"
+            "feet + 10 m) for [\"depth\"] m (default 40); avatars, attachments, phantom objects and grass are\n"
+            "passed through; null if no object. Terrain is its own field. Heights are region z.",
+            [](const LLSD& data) { ibasho::probeGround(data); });
         add("messages",
             "Today's outgoing chat lines and IMs against IbashoMaxMessagesPerDay (counted by Second Life time\n"
             "date, kept across restarts): replies {date, count, max, left}. Past the limit, chat and IMs are\n"
