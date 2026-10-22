@@ -58,6 +58,15 @@ namespace ibasho
     void initSpectator();
     // LLWindow mouse events from LEAP; while spectating, the window's cursor position follows them.
     void onInjectedMouse(const LLCoordGL& pos);
+
+    // Hard limits (ibasholimits.cpp), checked where the viewer sends, so they hold for UI clicks and keys
+    // sent over LEAP too. Each returns false, after a notice and an IbashoEvents "refused" event, to refuse.
+    // Outgoing local chat line or IM: counted against IbashoMaxMessagesPerDay (by SLT date, persisted).
+    bool allowOutgoingMessage(const std::string& kind);
+    // A payment or purchase through the viewer's own UI: the spending caps; counts toward the session.
+    bool allowSpend(S32 amount, const std::string& what);
+    bool allowLandBuy();      // IbashoAllowLandBuy
+    bool allowCurrencyBuy();  // IbashoAllowCurrencyBuy (buying L$ with real money)
 }
 
 #endif

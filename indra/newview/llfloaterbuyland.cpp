@@ -27,6 +27,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llfloaterbuyland.h"
+#include "ibashohooks.h" // Ibasho
 
 // viewer includes
 #include "llagent.h"
@@ -1339,6 +1340,7 @@ void LLFloaterBuyLandUI::startBuyPostConfirm(const std::string& password)
 
 void LLFloaterBuyLandUI::onClickBuy()
 {
+    if (!ibasho::allowLandBuy()) return; // Ibasho: no land purchases unless IbashoAllowLandBuy
     startBuyPreConfirm();
 }
 

@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include "ibashohooks.h" // Ibasho
 #include "lluictrlfactory.h"
 #include "lltextbox.h"
 #include "lllineeditor.h"
@@ -564,6 +565,7 @@ bool LLCurrencyUIManager::process()
 
 void LLCurrencyUIManager::buy(const std::string& buy_msg)
 {
+    if (!ibasho::allowCurrencyBuy()) return; // Ibasho: no real-money L$ purchases unless IbashoAllowCurrencyBuy
     if (!canBuy())
     {
         return;

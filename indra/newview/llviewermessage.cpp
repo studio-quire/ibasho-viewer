@@ -386,6 +386,7 @@ void give_money(const LLUUID& uuid, LLViewerRegion* region, S32 amount, bool is_
             LL_WARNS() << "Failed to send L$ gift to to Null UUID." << LL_ENDL;
             return;
         }
+        if (!ibasho::allowSpend(amount, "payment")) return; // Ibasho: spending caps, for the pay window too
 //      gStatusBar->debitBalance(amount);
         LLMessageSystem* msg = gMessageSystem;
         msg->newMessageFast(_PREHASH_MoneyTransferRequest);

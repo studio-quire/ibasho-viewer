@@ -1935,6 +1935,7 @@ void LLIMModel::sendMessage(const std::string& utf8_text,
                      const LLUUID& other_participant_id,
                      EInstantMessage dialog)
 {
+    if (!ibasho::allowOutgoingMessage("IM")) return; // Ibasho: the daily message limit
     std::string name;
     bool sent = false;
     LLAgentUI::buildFullname(name);

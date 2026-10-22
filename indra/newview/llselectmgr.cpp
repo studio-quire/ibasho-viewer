@@ -4826,6 +4826,7 @@ struct LLBuyData
 // info -as displayed in the UI- for every item.
 void LLSelectMgr::sendBuy(const LLUUID& buyer_id, const LLUUID& category_id, const LLSaleInfo sale_info)
 {
+    if (!ibasho::allowSpend(sale_info.getSalePrice(), "purchase")) return; // Ibasho: spending caps
     LLBuyData buy;
     buy.mCategoryID = category_id;
     buy.mSaleInfo = sale_info;

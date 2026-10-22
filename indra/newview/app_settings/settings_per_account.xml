@@ -176,6 +176,7 @@
         <key>Value</key>
           <string />
       </map>
+    <!-- Ibasho: off by default (was 1) -->
     <key>LogNearbyChat</key>
         <map>
         <key>Comment</key>
@@ -185,7 +186,7 @@
         <key>Type</key>
             <string>Boolean</string>
         <key>Value</key>
-            <integer>1</integer>
+            <integer>0</integer>
         </map>
     <key>LogTimestamp</key>
         <map>
@@ -326,6 +327,7 @@
         <key>Value</key>
             <integer>0</integer>
         </map>
+    <!-- Ibasho: off by default (was 2) -->
     <key>KeepConversationLogTranscripts</key>
     	<map>
       	<key>Comment</key>
@@ -335,7 +337,7 @@
       	<key>Type</key>
       		<string>S32</string>
       	<key>Value</key>
-      		<integer>2</integer>
+      		<integer>0</integer>
     	</map>    
     <key>NearbyChatIsNotTornOff</key>
     <map>

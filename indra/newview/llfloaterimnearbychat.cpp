@@ -27,6 +27,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "message.h"
+#include "ibashohooks.h" // Ibasho
 
 #include "lliconctrl.h"
 #include "llappviewer.h"
@@ -961,6 +962,14 @@ void send_chat_from_viewer(const std::string& utf8_out_text, EChatType type, S32
     {
         LLUIUsage::instance().logCommand("Chat.SendNearby"); // pseuo-command
     }
+
+    // <Ibasho> the daily message limit (typing start/stop and chat to scripts on other channels don't count)
+    if (channel == 0 && (type == CHAT_TYPE_WHISPER || type == CHAT_TYPE_NORMAL || type == CHAT_TYPE_SHOUT)
+        && !ibasho::allowOutgoingMessage("chat line"))
+    {
+        return;
+    }
+    // </Ibasho>
 
     LLMessageSystem* msg = gMessageSystem;
 

@@ -11959,6 +11959,39 @@
       <key>Value</key>
       <integer>500</integer>
     </map>
+    <key>IbashoMaxMessagesPerDay</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: most outgoing local chat lines and IMs per day (Second Life time date; kept across restarts); past it they are refused. 0 = no limit. Linden Lab's Scripted Agent Policy allows 5000 a day for all of one owner's agents.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>3000</integer>
+    </map>
+    <key>IbashoAllowLandBuy</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: allow buying land (the Buy Land window). Off by default.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>IbashoAllowCurrencyBuy</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: allow buying L$ with real money (the Buy L$ window). Off by default.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>IbashoMaxUploadCost</key>
     <map>
       <key>Comment</key>

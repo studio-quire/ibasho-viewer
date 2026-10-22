@@ -61,6 +61,11 @@ namespace ibasho
     // IbashoAgent ops that live in their own files (ibashomove.cpp, ibashomesh.cpp).
     void move(const LLSD& request);
     void stopMove(const LLSD& request);
+
+    // ibasholimits.cpp: a notice plus an IbashoEvents {event: "refused", what, reason}; and today's
+    // message count {date, count, max, left}.
+    void refuse(const std::string& what, const std::string& reason);
+    LLSD messageCount();
     void uploadMesh(const LLSD& request);
 }
 

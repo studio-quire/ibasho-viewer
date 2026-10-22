@@ -124,7 +124,13 @@ private:
                 reply["error"] = "session didn't start (not sent)";
                 return true;
             }
-            LLIMModel::sendMessage(text, session_id, other_id, dialog);
+            LLSD left = ibasho::messageCount()["left"];
+            if (left.isDefined() && left.asInteger() <= 0)
+            {
+                reply["error"] = "today's message limit is reached (IbashoMaxMessagesPerDay); not sent";
+                return true;
+            }
+            LLIMModel::sendMessage(text, session_id, other_id, dialog); // counted there (ibasho::allowOutgoingMessage)
             reply["session_id"] = session_id;
             return true;
         });

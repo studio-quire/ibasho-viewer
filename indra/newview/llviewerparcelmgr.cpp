@@ -27,6 +27,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llviewerparcelmgr.h"
+#include "ibashohooks.h" // Ibasho
 
 // Library includes
 #include "llaudioengine.h"
@@ -1226,6 +1227,7 @@ LLViewerParcelMgr::ParcelBuyInfo* LLViewerParcelMgr::setupParcelBuy(
 
 void LLViewerParcelMgr::sendParcelBuy(ParcelBuyInfo* info)
 {
+    if (!ibasho::allowLandBuy()) return; // Ibasho: no land purchases unless IbashoAllowLandBuy
     // send the message
     LLMessageSystem* msg = gMessageSystem;
     msg->newMessage(info->mIsClaim ? "ParcelClaim" : "ParcelBuy");
@@ -2613,6 +2615,7 @@ void LLViewerParcelMgr::buyPass()
 
     LLViewerRegion* region = getSelectionRegion();
     if (!region) return;
+    if (!ibasho::allowSpend(parcel->getPassPrice(), "parcel pass")) return; // Ibasho: spending caps
 
     LLMessageSystem* msg = gMessageSystem;
     msg->newMessageFast(_PREHASH_ParcelBuyPass);

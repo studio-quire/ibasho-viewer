@@ -664,6 +664,12 @@ public:
         add("stop",
             "Stop the current move now. Replies {was_moving, pos, ...} (the move_done info if it was moving).",
             [](const LLSD& data) { ibasho::stopMove(data); });
+        add("messages",
+            "Today's outgoing chat lines and IMs against IbashoMaxMessagesPerDay (counted by Second Life time\n"
+            "date, kept across restarts): replies {date, count, max, left}. Past the limit, chat and IMs are\n"
+            "refused with a notice and an IbashoEvents {event: \"refused\"}.",
+            &IbashoAgentListener::messages,
+            llsd::map("reply", LLSD()));
         add("uploadMesh",
             "Upload a model (.dae, .gltf, .glb) through the model upload floater, as picking the file for\n"
             "the high LOD does: lower LODs and physics as the floater generates them by default, then\n"
@@ -728,6 +734,11 @@ private:
         response["held"] = held;
     }
 
+    void messages(const LLSD& data)
+    {
+        Response response(ibasho::messageCount(), data);
+    }
+
     void spectator(const LLSD& data)
     {
         Response response(LLSD(), data);
@@ -771,7 +782,7 @@ private:
             give_money(to, gAgent.getRegion(), amount, false, TRANS_GIFT, data["desc"].asString());
             response["target"] = "avatar";
         }
-        ibasho::recordSpend(amount);
+        // give_money checked the caps again and counted the payment (ibasho::allowSpend)
         response["ok"] = true;
         response["spent_this_session"] = ibasho::spentThisSession();
     }
