@@ -11935,7 +11935,7 @@
       <key>Type</key>
       <string>S32</string>
       <key>Value</key>
-      <integer>500</integer>
+      <integer>100</integer>
     </map>
     <key>IbashoSpectator</key>
     <map>
@@ -11957,7 +11957,7 @@
       <key>Type</key>
       <string>S32</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>500</integer>
     </map>
     <key>IbashoMaxUploadCost</key>
     <map>
