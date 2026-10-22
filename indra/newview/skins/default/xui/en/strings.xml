@@ -7,8 +7,9 @@
 
 	<!-- Default Args - these arguments will be replaced in all strings -->
 	<string name="SECOND_LIFE">Second Life</string>
-	<string name="APP_NAME">Second Life</string>
-	<string name="CAPITALIZED_APP_NAME">SECOND LIFE</string>
+	<!-- Ibasho: the viewer's own name (SECOND_LIFE above stays: it names the world) -->
+	<string name="APP_NAME">Ibasho</string>
+	<string name="CAPITALIZED_APP_NAME">IBASHO</string>
 	<string name="SECOND_LIFE_GRID">Second Life Grid</string>
 	<string name="SUPPORT_SITE">Second Life Support Portal</string>
 
@@ -19,9 +20,11 @@
 	<string name="StartupRequireDriverUpdate">Graphics initialization failed. Please update your graphics driver!</string>
 
 	<!-- about dialog/support string-->
+	<!-- Ibasho: no link to Linden Lab's release notes; what Ibasho is built on, and who doesn't support it -->
 	<string name="AboutHeader">
 [CHANNEL] [VIEWER_VERSION_0].[VIEWER_VERSION_1].[VIEWER_VERSION_2].[VIEWER_VERSION_3] ([ADDRESS_SIZE]bit)
-[[VIEWER_RELEASE_NOTES_URL] [ReleaseNotes]]
+Built on the Second Life viewer source code (26.4.0, develop 81bc977) by Linden Lab, under the GNU LGPL 2.1.
+This software is not provided or supported by Linden Lab, the makers of Second Life. Ibasho itself comes without support.
 	</string>
     <string name="BuildConfig">Build Configuration [BUILD_CONFIG]</string>
 

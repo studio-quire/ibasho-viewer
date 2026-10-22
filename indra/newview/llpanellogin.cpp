@@ -314,6 +314,11 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
     std::string channel = LLVersionInfo::instance().getChannel();
     std::string version = stringize(LLVersionInfo::instance().getShortVersion(), " (",
                                     LLVersionInfo::instance().getBuild(), ')');
+    // <Ibasho> show the viewer's name and version (TPV policy 1g)
+    LLTextBox* version_text = getChild<LLTextBox>("version_text");
+    version_text->setText(stringize(channel, ' ', LLVersionInfo::instance().getVersion()));
+    version_text->setClickedCallback(onClickVersion, NULL);
+    // </Ibasho>
 
     LLTextBox* forgot_password_text = getChild<LLTextBox>("forgot_password_text");
     forgot_password_text->setClickedCallback(onClickForgotPassword, NULL);

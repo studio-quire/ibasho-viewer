@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <strings>
-	<string name="CAPITALIZED_APP_NAME">
-		SECOND LIFE
-	</string>
+	<!-- Ibasho: APP_NAME, CAPITALIZED_APP_NAME and AboutHeader come from en/strings.xml -->
 	<string name="SUPPORT_SITE">
 		Portal de Supporte Second Life
 	</string>
@@ -20,10 +18,6 @@
 	</string>
 	<string name="StartupRequireDriverUpdate">
 		Falha na inicialização dos gráficos. Atualize seu driver gráfico!
-	</string>
-	<string name="AboutHeader">
-		[CHANNEL] [VIEWER_VERSION_0].[VIEWER_VERSION_1].[VIEWER_VERSION_2].[VIEWER_VERSION_3] ([ADDRESS_SIZE]bit) 
-[[VIEWER_RELEASE_NOTES_URL] [ReleaseNotes]]
 	</string>
 	<string name="BuildConfig">
 		Configuração do corpo [BUILD_CONFIG]

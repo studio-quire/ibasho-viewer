@@ -391,7 +391,7 @@ std::string LLDir::buildSLOSCacheDir() const
     }
     else
     {
-        res = add(getOSCacheDir(), "SecondLife");
+        res = add(getOSCacheDir(), "Ibasho"); // Ibasho: own cache folder (this runs before the app name is set)
     }
     return res;
 }

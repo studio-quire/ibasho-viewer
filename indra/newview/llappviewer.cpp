@@ -695,7 +695,7 @@ LLAppViewer::LLAppViewer()
 
     // Need to do this initialization before we do anything else, since anything
     // that touches files should really go through the lldir API
-    gDirUtilp->initAppDirs("SecondLife");
+    gDirUtilp->initAppDirs("Ibasho"); // Ibasho: own settings, logs and cache, apart from any other viewer's
     //
     // IMPORTANT! Do NOT put anything that will write
     // into the log files during normal startup until AFTER
@@ -3022,7 +3022,7 @@ bool LLAppViewer::initConfiguration()
     {
         std::string splash_msg;
         LLStringUtil::format_map_t args;
-        args["[APP_NAME]"] = LLTrans::getString("SECOND_LIFE");
+        args["[APP_NAME]"] = LLTrans::getString("APP_NAME"); // Ibasho: the viewer's name, not the world's
         splash_msg = LLTrans::getString("StartupLoading", args);
         LLSplashScreen::show();
         LLSplashScreen::update(splash_msg);

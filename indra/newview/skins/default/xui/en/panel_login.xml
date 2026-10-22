@@ -340,6 +340,19 @@
                left="40"
                top_pad="25"
                pad_bottom="1" />
+              <!-- Ibasho: the viewer's name and version on the login screen (filled in by LLPanelLogin; click for About) -->
+              <text
+               follows="left|top"
+               font="SansSerifSmall"
+               text_color="LtGray"
+               height="15"
+               name="version_text"
+               left="40"
+               top_pad="10"
+               width="220"
+               halign="center">
+               Ibasho
+              </text>
             </layout_panel>
           </layout_stack>
         </layout_panel>

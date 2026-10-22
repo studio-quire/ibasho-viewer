@@ -311,7 +311,7 @@ protected:
     // NSIS's method is somewhat unreliable since window
     // can close long before cleanup is done.
     // sendURLToOtherInstance also relies on this to detect if viewer is up.
-    static constexpr const char* sWindowClass = "Second Life";
+    static constexpr const char* sWindowClass = "Ibasho"; // Ibasho: SLURLs and instance checks don't reach other viewers
 
 private:
 

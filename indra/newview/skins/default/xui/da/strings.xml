@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
-	<string name="CAPITALIZED_APP_NAME">
-		SECOND LIFE
-	</string>
+	<!-- Ibasho: APP_NAME, CAPITALIZED_APP_NAME and AboutHeader come from en/strings.xml -->
 	<string name="SUPPORT_SITE">
 		Second Life Support Portal
 	</string>

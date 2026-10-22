@@ -3,12 +3,7 @@
 	<string name="SECOND_LIFE">
 		Second Life
 	</string>
-	<string name="APP_NAME">
-		Second Life
-	</string>
-	<string name="CAPITALIZED_APP_NAME">
-		SECOND LIFE
-	</string>
+	<!-- Ibasho: APP_NAME, CAPITALIZED_APP_NAME and AboutHeader come from en/strings.xml -->
 	<string name="SECOND_LIFE_GRID">
 		Second Life Ağı
 	</string>
@@ -29,10 +24,6 @@
 	</string>
 	<string name="StartupRequireDriverUpdate">
 		Grafik başlatma başarılamadı. Lütfen grafik sürücünüzü güncelleştirin!
-	</string>
-	<string name="AboutHeader">
-		[CHANNEL] [VIEWER_VERSION_0].[VIEWER_VERSION_1].[VIEWER_VERSION_2].[VIEWER_VERSION_3] ([ADDRESS_SIZE]bit) 
-[[VIEWER_RELEASE_NOTES_URL] [ReleaseNotes]]
 	</string>
 	<string name="BuildConfig">
 		Yapı Konfigürasyonu [BUILD_CONFIG]
