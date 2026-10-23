@@ -1,4 +1,6 @@
 # -*- cmake -*-
+# Modified for Ibasho (2026-10-10, 2026-10-22): builds the Ibasho LEAP API files. Changes are marked
+# "Ibasho".
 
 project(viewer)
 

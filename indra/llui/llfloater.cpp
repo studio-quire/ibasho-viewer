@@ -22,6 +22,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-10, 2026-10-22): a hook that lets newview hold a floater hidden
+ * (IbashoAgent streamUI). Changes are marked "Ibasho".
  */
 
 // Floating "windows" within the GL display, like the inventory floater,

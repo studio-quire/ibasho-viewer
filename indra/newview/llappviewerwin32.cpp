@@ -22,6 +22,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-22): the single-instance mutex is Ibasho's own. Changes are marked
+ * "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"

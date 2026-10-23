@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Modified for Ibasho (2026-10-22): a line with the viewer's name and version. Changes are marked "Ibasho". -->
 <panel
   follows="all"
   height="768"

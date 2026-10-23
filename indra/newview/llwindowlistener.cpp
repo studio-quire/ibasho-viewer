@@ -22,6 +22,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-11, 2026-10-22): hook: LEAP mouse events move the app's cursor in
+ * spectator mode. Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"

@@ -1,3 +1,4 @@
+<!-- Modified for Ibasho (2026-10-22): chat and IM transcripts off by default (LogNearbyChat, KeepConversationLogTranscripts). Changes are marked "Ibasho". -->
 <llsd>
     <map>
     <key>AvatarHoverOffsetZ</key>

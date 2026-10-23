@@ -24,6 +24,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-10, 2026-10-22): UI.call replies with an error for an unknown
+ * function instead of crashing. Changes are marked "Ibasho".
  */
 
 // Precompiled header

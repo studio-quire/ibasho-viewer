@@ -1,4 +1,6 @@
 // Microsoft Visual C++ generated resource script.
+// Modified for Ibasho (2026-10-22): version resources and the splash say Ibasho. Changes are marked
+// "Ibasho".
 //
 #include "resource.h"
 

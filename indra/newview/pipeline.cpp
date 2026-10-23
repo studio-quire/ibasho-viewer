@@ -22,6 +22,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the window's
+ * frames (IbashoAgent hideAvatars). Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"

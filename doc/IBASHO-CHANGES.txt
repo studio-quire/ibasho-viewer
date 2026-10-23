@@ -1,0 +1,217 @@
+Ibasho: changes to Linden Lab's files
+
+Ibasho is a modified version of the Second Life viewer source code (Linden Research, Inc.;
+secondlife/viewer, develop at 81bc977d693e36feb3e468a84ea55cdcbbb37f70), distributed under the GNU LGPL 2.1
+(doc/LGPL-license.txt). As section 2(a) asks, this lists every file of the original that Ibasho
+changed, with the dates of the changes (UTC). Each changed source file also says so in its header,
+and the changed lines are marked "Ibasho". Files Ibasho added (indra/newview/ibasho*) carry their own
+LGPL headers.
+
+doc/LICENSE-logos.txt
+    Modified for Ibasho (2026-10-22, 2026-10-23): a section recording the replaced artwork.
+indra/llfilesystem/lldir.cpp
+    Modified for Ibasho (2026-10-22): the cache folder is named after the app (Ibasho) instead of
+    SecondLife.
+indra/llui/llfloater.cpp
+    Modified for Ibasho (2026-10-10, 2026-10-22): a hook that lets newview hold a floater hidden
+    (IbashoAgent streamUI).
+indra/llwindow/llwindowwin32.cpp
+    Modified for Ibasho (2026-10-11, 2026-10-22): spectator mode (the real mouse and keyboard
+    don't reach the viewer while LEAP drives it); the splash says Ibasho.
+indra/newview/CMakeLists.txt
+    Modified for Ibasho (2026-10-10, 2026-10-22): builds the Ibasho LEAP API files.
+indra/newview/VIEWER_VERSION.txt
+    Modified for Ibasho (2026-10-22): Ibasho's own version number (a data file read by CMake).
+indra/newview/app_settings/settings.xml
+    Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22): settings for the Ibasho LEAP APIs
+    and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator,
+    IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy).
+indra/newview/app_settings/settings_per_account.xml
+    Modified for Ibasho (2026-10-22): chat and IM transcripts off by default (LogNearbyChat,
+    KeepConversationLogTranscripts).
+indra/newview/icons/test/secondlife.icns
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife.ico
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife_128.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife_16.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife_256.BMP
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife_256.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife_32.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife_48.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/icons/test/secondlife_512.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/installers/windows/install_icon.BMP
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/installers/windows/install_icon.ico
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/installers/windows/uninstall_icon.BMP
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/installers/windows/uninstall_icon.ico
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/llappviewer.cpp
+    Modified for Ibasho (2026-10-22): the app folder is named Ibasho; the splash text uses the app
+    name.
+indra/newview/llappviewer.h
+    Modified for Ibasho (2026-10-22): the window class is Ibasho's own.
+indra/newview/llappviewerwin32.cpp
+    Modified for Ibasho (2026-10-22): the single-instance mutex is Ibasho's own.
+indra/newview/llcurrencyuimanager.cpp
+    Modified for Ibasho (2026-10-22): buying L$ with real money is refused unless
+    IbashoAllowCurrencyBuy.
+indra/newview/lldrawpoolalpha.cpp
+    Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
+    window's frames (IbashoAgent hideAvatars).
+indra/newview/lldrawpoolavatar.cpp
+    Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
+    window's frames (IbashoAgent hideAvatars).
+indra/newview/llfloaterbuyland.cpp
+    Modified for Ibasho (2026-10-22): buying land is refused unless IbashoAllowLandBuy.
+indra/newview/llfloaterimnearbychat.cpp
+    Modified for Ibasho (2026-10-22): local chat lines count toward the daily message limit
+    (IbashoMaxMessagesPerDay).
+indra/newview/llfloatermodelpreview.h
+    Modified for Ibasho (2026-10-10, 2026-10-22): a friend declaration for IbashoAgent uploadMesh.
+indra/newview/llhudobject.cpp
+    Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
+    window's frames (IbashoAgent hideAvatars).
+indra/newview/llimprocessing.cpp
+    Modified for Ibasho (2026-10-10, 2026-10-22): hook: IMs from objects are posted to
+    IbashoEvents.
+indra/newview/llimview.cpp
+    Modified for Ibasho (2026-10-10, 2026-10-22): hooks: incoming and outgoing IMs are posted to
+    IbashoEvents; outgoing IMs count toward the daily message limit.
+indra/newview/llmodelpreview.h
+    Modified for Ibasho (2026-10-17, 2026-10-22): a friend declaration for IbashoAgent uploadMesh.
+indra/newview/llpanellogin.cpp
+    Modified for Ibasho (2026-10-22): shows the viewer's name and version on the login screen.
+indra/newview/llselectmgr.cpp
+    Modified for Ibasho (2026-10-10, 2026-10-22): hooks: object properties replies fill the
+    IbashoObjects cache; purchases within the spending caps.
+indra/newview/llspatialpartition.cpp
+    Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
+    window's frames (IbashoAgent hideAvatars).
+indra/newview/lluilistener.cpp
+    Modified for Ibasho (2026-10-10, 2026-10-22): UI.call replies with an error for an unknown
+    function instead of crashing.
+indra/newview/llviewermessage.cpp
+    Modified for Ibasho (2026-10-10, 2026-10-22): hook: balance replies are posted to
+    IbashoEvents; payments within the spending caps.
+indra/newview/llviewerobjectlist.cpp
+    Modified for Ibasho (2026-10-10, 2026-10-22): hook: objects created by the Ibasho APIs.
+indra/newview/llviewerparcelmgr.cpp
+    Modified for Ibasho (2026-10-22): land purchases refused unless IbashoAllowLandBuy; parcel
+    passes within the spending caps.
+indra/newview/llviewerwindow.cpp
+    Modified for Ibasho (2026-10-11, 2026-10-22): hook: spectator mode is set up before the
+    window exists.
+indra/newview/llvopartgroup.cpp
+    Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
+    window's frames (IbashoAgent hideAvatars).
+indra/newview/llwindowlistener.cpp
+    Modified for Ibasho (2026-10-11, 2026-10-22): hook: LEAP mouse events move the app's cursor
+    in spectator mode.
+indra/newview/pipeline.cpp
+    Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
+    window's frames (IbashoAgent hideAvatars).
+indra/newview/res/icon1.ico
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/res/ll_icon_small.ico
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/res/viewerRes.rc
+    Modified for Ibasho (2026-10-22): version resources and the splash say Ibasho.
+indra/newview/skins/default/textures/icons/Inv_SysClosed.png
+    Replaced for Ibasho (2026-10-23) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/icons/Inv_SysOpen.png
+    Replaced for Ibasho (2026-10-23) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/icons/SL_Logo.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/icons/hand.png
+    Replaced for Ibasho (2026-10-23) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/icons/map_placeholder.png
+    Replaced for Ibasho (2026-10-23) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/taskpanel/TabIcon_Home_Selected.png
+    Replaced for Ibasho (2026-10-23) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/windows/login_sl_logo.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/windows/login_sl_logo_horizontal.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/textures/windows/login_sl_logo_small.png
+    Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/skins/default/xui/da/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/de/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/de/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/en/floater_about.xml
+    Modified for Ibasho (2026-10-22): credits and licenses for Ibasho (base credited, Havok,
+    Kakadu and Siren14 lines dropped, artwork notice).
+indra/newview/skins/default/xui/en/panel_login.xml
+    Modified for Ibasho (2026-10-22): a line with the viewer's name and version.
+indra/newview/skins/default/xui/en/strings.xml
+    Modified for Ibasho (2026-10-22): the app name is Ibasho; the About header names the base and
+    says who doesn't support it.
+indra/newview/skins/default/xui/es/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/es/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/fr/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/fr/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/it/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/it/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/ja/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/ja/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/pl/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/pt/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/pt/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/ru/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/ru/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/tr/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/tr/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/skins/default/xui/zh/floater_about.xml
+    Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
+    English (Ibasho) ones apply.
+indra/newview/skins/default/xui/zh/strings.xml
+    Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
+    overrides removed, so the English (Ibasho) ones apply.
+indra/newview/viewer_manifest.py
+    Modified for Ibasho (2026-10-22): app, executable and installer names (Ibasho,
+    IbashoViewer.exe).

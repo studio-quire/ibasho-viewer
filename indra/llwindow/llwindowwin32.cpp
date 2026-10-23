@@ -22,6 +22,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-11, 2026-10-22): spectator mode (the real mouse and keyboard don't
+ * reach the viewer while LEAP drives it); the splash says Ibasho. Changes are marked "Ibasho".
  */
 
 #include "linden_common.h"

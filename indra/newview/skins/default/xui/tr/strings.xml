@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader overrides removed, so the English (Ibasho) ones apply. Changes are marked "Ibasho". -->
 <strings>
 	<string name="SECOND_LIFE">
 		Second Life

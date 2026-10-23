@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the English (Ibasho) ones apply. Changes are marked "Ibasho". -->
 <floater name="floater_about" title="ACERCA DE [CAPITALIZED_APP_NAME]">
 	<tab_container name="about_tab">
 		<panel label="Información" name="support_panel">
