@@ -1,7 +1,8 @@
 Licenses of the third-party software in this build of Ibasho (see also About > Licenses).
 Modified for Ibasho (2026-10-23): entries for software Ibasho doesn't include removed (the Logitech
-LCD SDK, FSI FontShop's Meta fonts, glh, Kakadu's JPEG2000, xmlrpc-epi, google-perftools) and
-OpenJPEG's license added (Ibasho decodes JPEG2000 with OpenJPEG).
+LCD SDK, FSI FontShop's Meta fonts, glh, Kakadu's JPEG2000, xmlrpc-epi, google-perftools);
+OpenJPEG's license added (Ibasho decodes JPEG2000 with OpenJPEG); OpenAL Soft and freealut, with
+where their source is.
 
 ===========
 APR License
@@ -188,6 +189,21 @@ OpenJPEG License
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+
+===============================
+OpenAL Soft and freealut (LGPL)
+===============================
+
+OpenAL32.dll (OpenAL Soft 1.24.2) and alut.dll (freealut), which play the viewer's
+sound, are free software under the GNU Library General Public License, version 2
+or (at your option) any later version. They are unmodified builds by Linden Lab.
+Their complete source, with the scripts that build them, is at
+https://github.com/secondlife/3p-openal-soft, tag v1.24.2-r1 (OpenAL Soft itself:
+https://github.com/kcat/openal-soft). The license's full text is in
+licenses\openal-soft.txt beside this file in an Ibasho release, and at
+https://www.gnu.org/licenses/old-licenses/lgpl-2.0.html. You may replace these
+two DLLs with your own builds of the same libraries.
 
 
 ==================

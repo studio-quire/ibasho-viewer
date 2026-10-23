@@ -10286,13 +10286,13 @@
 		<key>ReportBugURL</key>
 		<map>
 			<key>Comment</key>
-			<string>Ibasho: URL used for filing bugs from the viewer (Help &gt; Report Bug): Ibasho's issue tracker, not Linden Lab's. PLACEHOLDER until the project is published: put the real repository here.</string>
+			<string>Ibasho: URL used for filing bugs from the viewer (Help &gt; Report Bug): Ibasho's issue tracker, not Linden Lab's.</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
 			<string>String</string>
 			<key>Value</key>
-			<string>https://github.com/OWNER/ibasho/issues</string>
+			<string>https://github.com/Shoalstone/ibasho/issues</string>
 		</map>
 	<key>RevokePermsOnStopAnimation</key>
     <map>
