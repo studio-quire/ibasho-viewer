@@ -972,8 +972,9 @@ public:
             "[\"folder_id\"], [\"type\"] (texture|sound|animation, checked against the file), [\"next_perms\"]\n"
             "(e.g. \"MCT\"; default: the Uploads permission preferences), [\"timeout\"] (s, default 120).\n"
             "Textures: [\"max_size\"] (default 1024, the bake resolution; 2048 may cost more), [\"lossless\"].\n"
-            "Refused if the fee is over [\"max_cost\"], IbashoMaxUploadCost, or the pay caps. [\"quote\"]: just\n"
-            "reply the fee. Replies {item_id, asset_id, cost, charged, width?, height?} once the item exists.",
+            "Refused if the fee is over [\"max_cost\"] (negative counts as 0), IbashoMaxUploadCost, or the pay\n"
+            "caps. [\"quote\"]: just reply the fee. Replies {item_id, asset_id, cost, charged, width?,\n"
+            "height?} once the item exists.",
             &IbashoAgentListener::upload,
             llsd::map("path", LLSD(), "reply", LLSD()));
         add("wearables",
@@ -1061,9 +1062,9 @@ public:
             "[\"lod_med\"], [\"lod_low\"], [\"lod_lowest\"], [\"physics\"]: model files for those LODs (absolute\n"
             "paths), loaded after the high LOD as the floater's \"Load from file\" does; each file's objects must\n"
             "have the high LOD's object names (optionally with _LOD2/_LOD1/_LOD0/_PHYS).\n"
-            "Refused if the fee is over [\"max_cost\"], IbashoMaxUploadCost, or the pay caps. [\"quote\"]: stop\n"
-            "after calculating. Replies {name, cost, weights {land_impact, streaming, physics, server,\n"
-            "price_breakdown}, lods {high|med|low|lowest|physics: {tris, from}}, refusal?} for a quote, else\n"
+            "Refused if the fee is over [\"max_cost\"] (negative counts as 0), IbashoMaxUploadCost, or the pay\n"
+            "caps. [\"quote\"]: stop after calculating. Replies {name, cost, weights {land_impact, streaming,\n"
+            "physics, server, price_breakdown}, lods {high|med|low|lowest|physics: {tris, from}}, refusal?} for a quote, else\n"
             "adds {item_id, asset_id, charged} once the item exists; errors carry the floater's [\"log\"].",
             [](const LLSD& data) { ibasho::uploadMesh(data); },
             llsd::map("path", LLSD()));
@@ -1730,8 +1731,8 @@ private:
         std::string refusal;
         if (cost < 0)
             refusal = "the grid hasn't said what this upload costs";
-        else if (data.has("max_cost") && cost > data["max_cost"].asInteger())
-            refusal = llformat("the fee is L$%d, over max_cost L$%d", cost, data["max_cost"].asInteger());
+        else if (data.has("max_cost") && cost > llmax(0, data["max_cost"].asInteger()))   // negative: nothing
+            refusal = llformat("the fee is L$%d, over max_cost L$%d", cost, llmax(0, data["max_cost"].asInteger()));
         else if (cost > cap)
             refusal = llformat("the fee is L$%d, over the upload cap of L$%d (IbashoMaxUploadCost)", cost, cap);
         else

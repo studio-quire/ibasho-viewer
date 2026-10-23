@@ -236,7 +236,7 @@ public:
         s->floater = fmp->getHandle();
         s->quote = data["quote"].asBoolean();
         s->keep_open = data["keep_open"].asBoolean();
-        s->max_cost = data.has("max_cost") ? data["max_cost"].asInteger() : -1;
+        s->max_cost = data.has("max_cost") ? llmax(0, data["max_cost"].asInteger()) : -1;   // negative: nothing
         s->start = time_corrected();
         s->folder_id = folder_id;
         s->lod_files = lod_files;
