@@ -22,11 +22,15 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-23): hooks: avatar groups and picks replies go to IbashoAgent profile
+ * (for grids without the AgentProfile capability). Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
 
 #include "llavatarpropertiesprocessor.h"
+#include "ibashohooks.h" // Ibasho
 
 // Viewer includes
 #include "llagent.h"
@@ -489,6 +493,7 @@ void LLAvatarPropertiesProcessor::processAvatarPicksReply(LLMessageSystem* msg, 
     msg->getUUID(_PREHASH_AgentData, _PREHASH_TargetID, target_id);
 
     LL_DEBUGS("AvatarProperties") << "Received AvatarPicksReply for " << target_id << LL_ENDL;
+    ibasho::onAvatarPicksReply(msg); // Ibasho
 }
 
 void LLAvatarPropertiesProcessor::processPickInfoReply(LLMessageSystem* msg, void**)
@@ -533,6 +538,7 @@ void LLAvatarPropertiesProcessor::processAvatarGroupsReply(LLMessageSystem* msg,
     msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AvatarID, avatar_id);
 
     LL_DEBUGS("AvatarProperties") << "Received AvatarGroupsReply for " << avatar_id << LL_ENDL;
+    ibasho::onAvatarGroupsReply(msg); // Ibasho
 }
 
 void LLAvatarPropertiesProcessor::notifyObservers(const LLUUID& id, void* data, EAvatarProcessorType type)

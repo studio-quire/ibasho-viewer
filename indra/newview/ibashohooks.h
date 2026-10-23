@@ -72,6 +72,13 @@ namespace ibasho
     // IPv6 literal) are refused, except the grid's own login pages. Checked before a navigation is sent and
     // again when a link or redirect inside a page arrives somewhere (that request has gone out by then).
     bool allowBrowserURL(const std::string& url);
+
+    // IbashoAgent findAvatars and profile (ibashoagent.cpp). An AvatarPickerReply carrying one of our searches'
+    // query ids is ours: returns true, and the avatar picker skips it. Groups and picks replies only matter on
+    // grids without the AgentProfile capability (LLAvatarPropertiesProcessor itself ignores them).
+    bool onAvatarPickerReply(LLMessageSystem* msg, const LLUUID& query_id);
+    void onAvatarGroupsReply(LLMessageSystem* msg);
+    void onAvatarPicksReply(LLMessageSystem* msg);
 }
 
 #endif

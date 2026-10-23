@@ -75,6 +75,9 @@ indra/newview/llappviewer.h
     Modified for Ibasho (2026-10-22): the window class is Ibasho's own.
 indra/newview/llappviewerwin32.cpp
     Modified for Ibasho (2026-10-22): the single-instance mutex is Ibasho's own.
+indra/newview/llavatarpropertiesprocessor.cpp
+    Modified for Ibasho (2026-10-23): hooks: avatar groups and picks replies go to IbashoAgent profile
+    (for grids without the AgentProfile capability).
 indra/newview/llcurrencyuimanager.cpp
     Modified for Ibasho (2026-10-22): buying L$ with real money is refused unless
     IbashoAllowCurrencyBuy.
@@ -84,6 +87,9 @@ indra/newview/lldrawpoolalpha.cpp
 indra/newview/lldrawpoolavatar.cpp
     Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
     window's frames (IbashoAgent hideAvatars).
+indra/newview/llfloateravatarpicker.cpp
+    Modified for Ibasho (2026-10-23): hook: avatar search replies that answer IbashoAgent findAvatars
+    go there instead of the avatar picker.
 indra/newview/llfloaterbuyland.cpp
     Modified for Ibasho (2026-10-22): buying land is refused unless IbashoAllowLandBuy.
 indra/newview/llfloaterimnearbychat.cpp

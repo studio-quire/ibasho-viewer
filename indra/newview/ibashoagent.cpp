@@ -34,8 +34,12 @@
 #include "llappearancemgr.h"
 #include "llavatarappearancedefines.h"
 #include "llavatarnamecache.h"
+#include "llavatarpropertiesprocessor.h"
+#include "llcachename.h"
 #include "llcallingcard.h"
 #include "llchatitemscontainerctrl.h"
+#include "llcorehttputil.h"
+#include "llcoros.h"
 #include "lldbstrings.h"
 #include "lleventapi.h"
 #include "llfilesystem.h"
@@ -66,8 +70,10 @@
 #include "lltoast.h"
 #include "lltrans.h"
 #include "lltransactiontypes.h"
+#include "lluri.h"
 #include "lluserrelations.h"
 #include "llviewercontrol.h"
+#include "llviewergenericmessage.h"
 #include "llviewerinventory.h"
 #include "llviewerjointattachment.h"
 #include "llviewermessage.h"
@@ -513,6 +519,208 @@ std::set<std::string> nameSet(const LLSD& list)
 }
 } // namespace streamui
 
+// ---- findAvatars and profile (2026-10-23, Claude Opus 5.5) ----
+// A name search as the avatar picker makes it (the region's AvatarPickerSearch capability, else the
+// AvatarPickerRequest message), and a profile as the profile window gets it (the AgentProfile capability, else
+// the older AvatarPropertiesRequest message, with groups and picks in replies of their own). Each request's
+// state is shared by its deferred reply and whatever fills it in; anything arriving after the reply has gone
+// finds nobody waiting, and the message routes stop listening once their request has replied.
+namespace lookup
+{
+constexpr F64 SETTLE = 0.5;     // replies by message can come in several parts: wait this long after the last
+constexpr F64 EXTRA_WAIT = 3.0; // and at most this long after the properties for groups and picks
+
+F64 now()
+{
+    return (F64)LLTimer::getTotalSeconds();
+}
+
+// A GET as LLFloaterAvatarPicker and LLAvatarPropertiesProcessor make it, from inside a coroutine. Failures
+// leave a short reason in `error`; the body, if any, is still returned.
+LLSD httpGet(const std::string& name, const std::string& url, F64 timeout, std::string& error)
+{
+    LLCore::HttpRequest::policy_t policy(LLCore::HttpRequest::DEFAULT_POLICY_ID);
+    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t adapter =
+        std::make_shared<LLCoreHttpUtil::HttpCoroutineAdapter>(name, policy);
+    LLCore::HttpRequest::ptr_t request = std::make_shared<LLCore::HttpRequest>();
+    LLCore::HttpOptions::ptr_t options = std::make_shared<LLCore::HttpOptions>();
+    options->setTimeout((unsigned int)llmax(1, llceil((F32)timeout)));
+    options->setFollowRedirects(true);
+    LLSD result = adapter->getAndSuspend(request, url, options);
+    LLCore::HttpStatus status =
+        LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS]);
+    if (!status)
+        error = status.isHttpStatus() ? llformat("HTTP %d", (S32)status.getType()) : status.toString();
+    result.erase(LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS);
+    return result;
+}
+
+struct Search
+{
+    LLUUID query_id; // set when searching by message
+    bool done = false;
+    F64 last_at = 0.0;
+    LLSD avatars = LLSD::emptyArray();
+    std::string error;
+};
+std::map<LLUUID, std::shared_ptr<Search>> sSearches; // searches by message, by query id
+
+void searchCoro(std::string url, F64 timeout, std::shared_ptr<Search> search)
+{
+    std::string error;
+    LLSD result = httpGet("IbashoAgent::findAvatars", url, timeout, error);
+    if (!error.empty() && !result["agents"].isArray()) // the picker reads a 400's body as results too
+        search->error = "the grid's avatar search failed (" + error + ")";
+    for (const auto& row : llsd::inArray(result["agents"]))
+        if (row["id"].asUUID().notNull())
+            search->avatars.append(llsd::map("id", row["id"].asUUID(), "username", row["username"].asString(),
+                                             "display_name", row["display_name"].asString()));
+    search->done = true;
+}
+
+struct Profile
+{
+    LLUUID id;
+    bool done = false;                                 // capability: the answer (or failure) is in
+    bool props = false, groups = false, picks = false; // by message: what has arrived
+    F64 props_at = 0.0, last_at = 0.0;
+    std::string error;
+    LLSD out = llsd::map("groups", LLSD::emptyArray(), "picks", LLSD::emptyArray()); // the reply's fields
+};
+std::multimap<LLUUID, std::shared_ptr<Profile>> sProfiles; // profiles by message, by avatar id
+
+// "YYYY-MM-DD"; just "MM-DD" when the avatar hides their age (as the profile window shows it).
+void setBorn(LLSD& out, const LLDate& born, bool hide_year)
+{
+    S32 year = 0, month = 0, day = 0;
+    if (born.secondsSinceEpoch() <= 0.0 || !born.split(&year, &month, &day))
+        return;
+    out["born"] = hide_year ? llformat("%02d-%02d", month, day) : llformat("%04d-%02d-%02d", year, month, day);
+    if (hide_year)
+        out["age_hidden"] = true;
+}
+
+// As LLAvatarPropertiesProcessor::accountType, untranslated.
+std::string accountType(S32 index, const std::string& caption)
+{
+    if (!caption.empty())
+        return caption; // special accounts
+    static const char* const TYPES[] = {"Resident", "Trial", "Charter Member", "Linden Lab Employee"};
+    return TYPES[llclamp(index, 0, 3)];
+}
+
+void addEntry(LLSD& list, const LLUUID& id, const std::string& name)
+{
+    if (id.isNull())
+        return;
+    for (const auto& entry : llsd::inArray(list))
+        if (entry["id"].asUUID() == id)
+            return;
+    list.append(llsd::map("id", id, "name", name));
+}
+
+// The AgentProfile capability's answer, read as LLAvatarPropertiesProcessor::requestAvatarPropertiesCoro does.
+void fillFromCapability(Profile& p, const LLSD& r)
+{
+    LLSD& out = p.out;
+    out["about"] = r["sl_about_text"].asString();
+    out["image_id"] = r["sl_image_id"].asUUID();
+    out["partner_id"] = r["partner_id"].asUUID();
+    out["first_life"] = r["fl_about_text"].asString();
+    out["first_life_image_id"] = r["fl_image_id"].asUUID();
+    setBorn(out, r["member_since"].asDate(), r["hide_age"].asBoolean() && p.id != gAgentID);
+    out["account"] = r.has("charter_member") ? accountType(r["charter_member"].asInteger(), "")
+                                             : accountType(0, r["caption"].asString());
+    out["online"] = r["online"].asBoolean();
+    out["allow_publish"] = r["allow_publish"].asBoolean();
+    out["identified"] = r["identified"].asBoolean();
+    out["transacted"] = r["transacted"].asBoolean();
+    if (!r["customer_type"].asString().empty())
+        out["customer_type"] = r["customer_type"].asString();
+    if (!r["notes"].asString().empty())
+        out["notes"] = r["notes"].asString(); // my own private notes about them
+    for (const auto& group : llsd::inArray(r["groups"]))
+        addEntry(out["groups"], group["id"].asUUID(), group["name"].asString());
+    for (const auto& pick : llsd::inArray(r["picks"]))
+        addEntry(out["picks"], pick["id"].asUUID(), pick["name"].asString());
+}
+
+void profileCoro(std::string url, F64 timeout, std::shared_ptr<Profile> p)
+{
+    std::string error;
+    LLSD result = httpGet("IbashoAgent::profile", url, timeout, error);
+    if (!error.empty())
+        p->error = "the grid gave no profile for that id (" + error + ")";
+    else if (result["id"].asUUID() != p->id)
+        p->error = "the grid gave no profile for that id";
+    else
+        fillFromCapability(*p, result);
+    p->done = true;
+}
+
+// The older properties reply, for every profile waiting on that avatar.
+class PropertiesObserver : public LLAvatarPropertiesObserver
+{
+public:
+    void processProperties(void* data, EAvatarProcessorType type) override
+    {
+        if (type != APT_PROPERTIES_LEGACY || !data)
+            return;
+        const LLAvatarLegacyData& d = *static_cast<const LLAvatarLegacyData*>(data);
+        auto range = sProfiles.equal_range(d.avatar_id);
+        for (auto it = range.first; it != range.second; ++it)
+        {
+            Profile& p = *it->second;
+            LLSD& out = p.out;
+            out["about"] = d.about_text;
+            out["image_id"] = d.image_id;
+            out["partner_id"] = d.partner_id;
+            out["first_life"] = d.fl_about_text;
+            out["first_life_image_id"] = d.fl_image_id;
+            setBorn(out, d.born_on, false);
+            out["account"] = accountType(d.caption_index, d.caption_text);
+            out["online"] = (d.flags & AVATAR_ONLINE) != 0;
+            out["allow_publish"] = (d.flags & AVATAR_ALLOW_PUBLISH) != 0;
+            out["identified"] = (d.flags & AVATAR_IDENTIFIED) != 0;
+            out["transacted"] = (d.flags & AVATAR_TRANSACTED) != 0;
+            if (!d.profile_url.empty())
+                out["web_url"] = d.profile_url;
+            p.props = true;
+            p.props_at = p.last_at = now();
+        }
+    }
+};
+
+// Never destroyed: the processor keeps a plain pointer to it while any profile waits, so it must outlive them all.
+PropertiesObserver* observer()
+{
+    static PropertiesObserver* sObserver = new PropertiesObserver;
+    return sObserver;
+}
+
+void watch(const std::shared_ptr<Profile>& p)
+{
+    if (!sProfiles.count(p->id))
+        LLAvatarPropertiesProcessor::getInstance()->addObserver(p->id, observer());
+    sProfiles.emplace(p->id, p);
+}
+
+void unwatch(const std::shared_ptr<Profile>& p)
+{
+    auto range = sProfiles.equal_range(p->id);
+    for (auto it = range.first; it != range.second; ++it)
+    {
+        if (it->second == p)
+        {
+            sProfiles.erase(it);
+            break;
+        }
+    }
+    if (!sProfiles.count(p->id))
+        LLAvatarPropertiesProcessor::getInstance()->removeObserver(p->id, observer());
+}
+} // namespace lookup
+
 class IbashoAgentListener : public LLEventAPI
 {
 public:
@@ -591,6 +799,22 @@ public:
             "[\"timeout\"] s (default 5) for lookups.",
             &IbashoAgentListener::names,
             llsd::map("ids", LLSD(), "reply", LLSD()));
+        add("findAvatars",
+            "Search avatars by [\"name\"] as the avatar picker does: \"first.last\", \"first last\", \"first\" (a\n"
+            "Resident), or part of a display name; the grid's search decides what matches. Replies\n"
+            "{avatars: [{id, username, display_name}]} (at most [\"limit\"], default 20, max 100; empty if nobody\n"
+            "matched) once the grid answers, or {error} if it hasn't within [\"timeout\"] s (default 10).",
+            &IbashoAgentListener::findAvatars,
+            llsd::map("name", LLSD(), "reply", LLSD()));
+        add("profile",
+            "Avatar [\"id\"]'s profile, as the profile window gets it: replies {id, username?, display_name?, about,\n"
+            "born? (YYYY-MM-DD; MM-DD with age_hidden: true), image_id, partner_id, first_life, first_life_image_id,\n"
+            "account, online, allow_publish, identified, transacted, groups: [{id, name}], picks: [{id, name}],\n"
+            "customer_type?, notes? (my own notes on them), web_url?}. Grids without the AgentProfile capability\n"
+            "(OpenSim) answer with older messages, where groups or picks may not come: then partial: true.\n"
+            "{error} if no profile comes within [\"timeout\"] s (default 10).",
+            &IbashoAgentListener::profile,
+            llsd::map("id", LLSD(), "reply", LLSD()));
         add("upload",
             "Upload file [\"path\"] (png/tga/bmp/jpg texture, wav sound, anim animation) as a new inventory\n"
             "item, paying the normal L$ upload fee. Optional [\"name\"] (default: file name), [\"desc\"],\n"
@@ -1072,6 +1296,147 @@ private:
         });
     }
 
+    void findAvatars(const LLSD& data)
+    {
+        // Read as the avatar picker reads it: "first.last" is "first last", and "Resident" isn't part of a name.
+        std::string name = data["name"].asString();
+        std::replace(name.begin(), name.end(), '.', ' ');
+        LLStringUtil::trim(name);
+        size_t sep = name.find_first_of(" _");
+        if (sep != std::string::npos)
+        {
+            std::string last = name.substr(sep + 1);
+            LLStringUtil::trim(last);
+            LLStringUtil::toLower(last);
+            if (last == "resident")
+                name = name.substr(0, sep);
+        }
+        if (name.empty())
+            return replyError(data, "need a name");
+        LLViewerRegion* region = gAgent.getRegion();
+        if (!region || LLStartUp::getStartupState() < STATE_STARTED)
+            return replyError(data, "not in world yet");
+        S32 limit = data.has("limit") ? llclamp(data["limit"].asInteger(), 1, 100) : 20;
+        F64 timeout = data.has("timeout") ? llclamp(data["timeout"].asReal(), 1.0, 120.0) : 10.0;
+
+        auto search = std::make_shared<lookup::Search>();
+        std::string url = region->getCapability("AvatarPickerSearch");
+        if (!url.empty())
+        {
+            if (url.back() != '/')
+                url += "/"; // as the picker does, so the query parses
+            url += "?page_size=100&names=" + LLURI::escape(name);
+            LLCoros::instance().launch("IbashoAgent::findAvatars",
+                                       [url, timeout, search]() { lookup::searchCoro(url, timeout, search); });
+        }
+        else
+        {
+            search->query_id.generate();
+            lookup::sSearches[search->query_id] = search;
+            LLMessageSystem* msg = gMessageSystem;
+            msg->newMessage("AvatarPickerRequest");
+            msg->nextBlock("AgentData");
+            msg->addUUID("AgentID", gAgent.getID());
+            msg->addUUID("SessionID", gAgent.getSessionID());
+            msg->addUUID("QueryID", search->query_id);
+            msg->nextBlock("Data");
+            msg->addString("Name", name);
+            gAgent.sendReliableMessage();
+        }
+
+        ibasho::deferReply(data, timeout, [search, limit](LLSD& reply, bool expired)
+        {
+            bool by_message = search->query_id.notNull();
+            bool ready = search->done && (!by_message || lookup::now() - search->last_at >= lookup::SETTLE);
+            if (!ready && !expired)
+                return false;
+            if (by_message)
+                lookup::sSearches.erase(search->query_id);
+            if (!search->error.empty())
+            {
+                reply["error"] = search->error;
+            }
+            else if (!search->done)
+            {
+                reply["error"] = "no answer from the grid's avatar search in time";
+            }
+            else
+            {
+                LLSD avatars = LLSD::emptyArray();
+                for (const auto& avatar : llsd::inArray(search->avatars))
+                    if (avatars.size() < limit)
+                        avatars.append(avatar);
+                reply["avatars"] = avatars;
+            }
+            return true;
+        });
+    }
+
+    void profile(const LLSD& data)
+    {
+        LLUUID id = data["id"].asUUID();
+        if (id.isNull())
+            return replyError(data, "need an avatar id");
+        if (!gAgent.getRegion() || LLStartUp::getStartupState() < STATE_STARTED)
+            return replyError(data, "not in world yet");
+        F64 timeout = data.has("timeout") ? llclamp(data["timeout"].asReal(), 1.0, 120.0) : 10.0;
+        LLAvatarNameCache::get(id, [](const LLUUID&, const LLAvatarName&) {}); // for the names in the reply
+
+        auto p = std::make_shared<lookup::Profile>();
+        p->id = id;
+        std::string url = gAgent.getRegionCapability("AgentProfile");
+        bool by_message = url.empty();
+        if (!by_message)
+        {
+            url += "/" + id.asString();
+            LLCoros::instance().launch("IbashoAgent::profile",
+                                       [url, timeout, p]() { lookup::profileCoro(url, timeout, p); });
+        }
+        else
+        {
+            // The properties request brings the groups reply too; picks are asked for on their own.
+            lookup::watch(p);
+            LLAvatarPropertiesProcessor::getInstance()->sendAvatarLegacyPropertiesRequest(id);
+            std::vector<std::string> strings{ id.asString() };
+            send_generic_message("avatarpicksrequest", strings);
+        }
+
+        ibasho::deferReply(data, timeout, [p, by_message](LLSD& reply, bool expired)
+        {
+            F64 now = lookup::now();
+            bool ready = by_message
+                ? (p->props && p->groups && p->picks && now - p->last_at >= lookup::SETTLE) ||
+                  (p->props && now - p->props_at >= lookup::EXTRA_WAIT)
+                : p->done;
+            if (!ready && !expired)
+                return false;
+            if (by_message)
+                lookup::unwatch(p);
+            if (!p->error.empty())
+            {
+                reply["error"] = p->error;
+                return true;
+            }
+            if (!(by_message ? p->props : p->done))
+            {
+                reply["error"] = "no profile came in time (an unknown id?)";
+                return true;
+            }
+            for (const auto& [key, value] : llsd::inMap(p->out))
+                reply[key] = value;
+            reply["id"] = p->id;
+            LLSD name = nameSD(p->id);
+            if (name.isDefined())
+            {
+                reply["display_name"] = name["display_name"];
+                reply["username"] = name["username"];
+            }
+            if (by_message && !(p->groups && p->picks))
+                reply["partial"] = true;
+            return true;
+        });
+    }
+
     void upload(const LLSD& data)
     {
         const std::string path = data["path"].asString();
@@ -1358,6 +1723,76 @@ private:
 
 IbashoAgentListener sIbashoAgentListener;
 } // namespace
+
+// findAvatars and profile answers that come by message (see lookup above).
+bool ibasho::onAvatarPickerReply(LLMessageSystem* msg, const LLUUID& query_id)
+{
+    auto found = lookup::sSearches.find(query_id);
+    if (found == lookup::sSearches.end())
+        return false;
+    lookup::Search& search = *found->second;
+    S32 count = msg->getNumberOfBlocksFast(_PREHASH_Data);
+    for (S32 i = 0; i < count; ++i)
+    {
+        LLUUID id;
+        std::string first, last;
+        msg->getUUIDFast(_PREHASH_Data, _PREHASH_AvatarID, id, i);
+        msg->getStringFast(_PREHASH_Data, _PREHASH_FirstName, first, i);
+        msg->getStringFast(_PREHASH_Data, _PREHASH_LastName, last, i);
+        if (id.isNull())
+            continue; // the "nobody found" line
+        std::string legacy = first + " " + (last.empty() ? std::string("Resident") : last);
+        search.avatars.append(llsd::map("id", id, "username", LLCacheName::buildUsername(legacy),
+                                        "display_name", LLCacheName::buildFullName(first, last)));
+    }
+    search.done = true;
+    search.last_at = lookup::now();
+    return true;
+}
+
+void ibasho::onAvatarGroupsReply(LLMessageSystem* msg)
+{
+    LLUUID avatar_id;
+    msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AvatarID, avatar_id);
+    auto range = lookup::sProfiles.equal_range(avatar_id);
+    for (auto it = range.first; it != range.second; ++it)
+    {
+        lookup::Profile& p = *it->second;
+        S32 count = msg->getNumberOfBlocksFast(_PREHASH_GroupData);
+        for (S32 i = 0; i < count; ++i)
+        {
+            LLUUID group_id;
+            std::string name;
+            msg->getUUIDFast(_PREHASH_GroupData, _PREHASH_GroupID, group_id, i);
+            msg->getStringFast(_PREHASH_GroupData, _PREHASH_GroupName, name, i);
+            lookup::addEntry(p.out["groups"], group_id, name);
+        }
+        p.groups = true;
+        p.last_at = lookup::now();
+    }
+}
+
+void ibasho::onAvatarPicksReply(LLMessageSystem* msg)
+{
+    LLUUID target_id;
+    msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_TargetID, target_id);
+    auto range = lookup::sProfiles.equal_range(target_id);
+    for (auto it = range.first; it != range.second; ++it)
+    {
+        lookup::Profile& p = *it->second;
+        S32 count = msg->getNumberOfBlocksFast(_PREHASH_Data);
+        for (S32 i = 0; i < count; ++i)
+        {
+            LLUUID pick_id;
+            std::string name;
+            msg->getUUIDFast(_PREHASH_Data, _PREHASH_PickID, pick_id, i);
+            msg->getStringFast(_PREHASH_Data, _PREHASH_PickName, name, i);
+            lookup::addEntry(p.out["picks"], pick_id, name);
+        }
+        p.picks = true;
+        p.last_at = lookup::now();
+    }
+}
 
 // Spectator mode (2026-10-11, Claude Opus 5.5): the window layer drops real input (llwindowwin32.cpp); this keeps
 // its flag in step with the setting, which LEAP can change (IbashoAgent spectator, LLViewerControl). The window's

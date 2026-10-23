@@ -21,11 +21,15 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-23): hook: avatar search replies that answer IbashoAgent findAvatars go
+ * there instead of the avatar picker. Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
 
 #include "llfloateravatarpicker.h"
+#include "ibashohooks.h" // Ibasho
 
 // Viewer includes
 #include "llagent.h"
@@ -679,6 +683,7 @@ void LLFloaterAvatarPicker::processAvatarPickerReply(LLMessageSystem* msg, void*
 
     // Not for us
     if (agent_id != gAgent.getID()) return;
+    if (ibasho::onAvatarPickerReply(msg, query_id)) return; // Ibasho: a findAvatars search
 
     LLFloaterAvatarPicker* floater = LLFloaterReg::findTypedInstance<LLFloaterAvatarPicker>("avatar_picker");
 
