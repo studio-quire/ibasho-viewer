@@ -24,13 +24,14 @@
  * $/LicenseInfo$
  *
  * Modified for Ibasho (2026-10-22, 2026-10-23): the app folder is named Ibasho; the splash text uses
- * the app name; no update checks with Linden Lab's update service; no LibVLC. Changes are marked
- * "Ibasho".
+ * the app name; no update checks with Linden Lab's update service; no LibVLC; the window never takes
+ * focus by itself (IbashoNoActivate, set up before the splash). Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
 
 #include "llappviewer.h"
+#include "ibashohooks.h" // Ibasho
 
 // Viewer includes
 #include "llversioninfo.h"
@@ -3010,6 +3011,8 @@ bool LLAppViewer::initConfiguration()
             return false;
         }
     }
+
+    ibasho::initNoActivate(); // Ibasho: before the splash and the window, so neither takes focus
 
     // Display splash screen.  Must be after above check for previous
     // crash as this dialog is always frontmost.

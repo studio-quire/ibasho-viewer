@@ -110,6 +110,7 @@ void handle_rebake_textures();                                  // llviewermenu.
 extern std::function<bool(LLFloater*, bool)> gIbashoFloaterVisibility; // llfloater.cpp
 #if LL_WINDOWS
 extern std::atomic<bool> gIbashoSpectator; // llwindowwin32.cpp
+extern std::atomic<bool> gIbashoNoActivate; // llwindowwin32.cpp
 #endif
 
 using namespace LLAvatarAppearanceDefines;
@@ -2075,6 +2076,22 @@ void ibasho::initSpectator()
         // hover or tooltip there. Not the real pointer (the flag is already set).
         if (on && gViewerWindow && gViewerWindow->getWindow())
             gViewerWindow->getWindow()->setCursorPosition(LLCoordWindow(-1, -1));
+    });
+#endif
+}
+
+// No activation (2026-10-23, Claude Opus 5.5): while IbashoNoActivate is on, the window layer never activates or
+// raises the viewer's window (llwindowwin32.cpp); this keeps its flag in step with the setting.
+void ibasho::initNoActivate()
+{
+#if LL_WINDOWS
+    LLControlVariable* control = gSavedSettings.getControl("IbashoNoActivate");
+    if (!control)
+        return;
+    gIbashoNoActivate = control->getValue().asBoolean();
+    control->getSignal()->connect([](LLControlVariable*, const LLSD& value, const LLSD&)
+    {
+        gIbashoNoActivate = value.asBoolean();
     });
 #endif
 }

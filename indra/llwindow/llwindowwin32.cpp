@@ -23,8 +23,9 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  *
- * Modified for Ibasho (2026-10-11, 2026-10-22): spectator mode (the real mouse and keyboard don't
- * reach the viewer while LEAP drives it); the splash says Ibasho. Changes are marked "Ibasho".
+ * Modified for Ibasho (2026-10-11, 2026-10-22, 2026-10-23): spectator mode (the real mouse and keyboard
+ * don't reach the viewer while LEAP drives it); the splash says Ibasho; the viewer never activates or
+ * raises its own window (IbashoNoActivate). Changes are marked "Ibasho".
  */
 
 #include "linden_common.h"
@@ -243,6 +244,40 @@ static bool ibasho_spectator_eats(HWND h_wnd, UINT u_msg, WPARAM w_param, LPARAM
     default:
         return false;
     }
+}
+
+// No activation (2026-10-23, Claude Opus 5.5)
+// The viewer often runs on the desktop of a person who is using it for something else (a game, their work).
+// While set (newview mirrors the IbashoNoActivate setting into it, before the splash screen), the viewer never
+// activates its own window or raises it over theirs: the window appears without activation just behind the
+// window in use, there's no splash screen and no taskbar flashing, and a maximized start fills the screen's work
+// area instead (maximizing always activates). The person can still click it, Alt+Tab to it and so on.
+std::atomic<bool> gIbashoNoActivate{ false };
+
+// Shows h_wnd without activating it, just below the application in use, so it covers none of it.
+static void ibasho_show_quietly(HWND h_wnd)
+{
+    HWND in_use = GetForegroundWindow();
+    if (in_use)
+    {
+        in_use = GetAncestor(in_use, GA_ROOTOWNER); // its dialogs sit above their owner: go below them all
+    }
+    DWORD pid = 0;
+    if (in_use)
+    {
+        GetWindowThreadProcessId(in_use, &pid);
+    }
+    UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW;
+    HWND after = HWND_BOTTOM; // nothing in use that we can tell, or a topmost one: behind everything
+    if (pid == GetCurrentProcessId())
+    {
+        flags |= SWP_NOZORDER; // the person is using the viewer already
+    }
+    else if (in_use && !(GetWindowLongPtr(in_use, GWL_EXSTYLE) & WS_EX_TOPMOST))
+    {
+        after = in_use;
+    }
+    SetWindowPos(h_wnd, after, 0, 0, 0, 0, flags);
 }
 // </Ibasho>
 
@@ -1007,6 +1042,7 @@ LLWindowWin32::~LLWindowWin32()
 void LLWindowWin32::show()
 {
     LL_DEBUGS("Window") << "Setting window to show" << LL_ENDL;
+    if (gIbashoNoActivate) { ibasho_show_quietly(mWindowHandle); return; } // Ibasho
     if (gIbashoSpectator) { ShowWindow(mWindowHandle, SW_SHOWNA); return; } // Ibasho spectator: don't take focus
     ShowWindow(mWindowHandle, SW_SHOW);
     SetForegroundWindow(mWindowHandle);
@@ -1024,12 +1060,13 @@ void LLWindowWin32::minimize()
 {
     setMouseClipping(false);
     showCursor();
-    ShowWindow(mWindowHandle, SW_MINIMIZE);
+    ShowWindow(mWindowHandle, gIbashoNoActivate ? SW_SHOWMINNOACTIVE : SW_MINIMIZE); // Ibasho: SW_MINIMIZE activates the next window
 }
 
 //virtual
 void LLWindowWin32::restore()
 {
+    if (gIbashoNoActivate) { ShowWindow(mWindowHandle, SW_SHOWNOACTIVATE); return; } // Ibasho
     ShowWindow(mWindowHandle, SW_RESTORE);
     SetForegroundWindow(mWindowHandle);
     SetFocus(mWindowHandle);
@@ -1202,6 +1239,19 @@ bool LLWindowWin32::maximize()
 
     mWindowThread->post([=]
         {
+            // <Ibasho> maximizing activates (and shows) the window: fill the screen's work area instead
+            MONITORINFO monitor = { sizeof(MONITORINFO) };
+            if (gIbashoNoActivate)
+            {
+                if (GetMonitorInfo(MonitorFromWindow(mWindowHandle, MONITOR_DEFAULTTONEAREST), &monitor))
+                {
+                    const RECT& r = monitor.rcWork;
+                    SetWindowPos(mWindowHandle, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
+                                 SWP_NOZORDER | SWP_NOACTIVATE);
+                }
+                return;
+            }
+            // </Ibasho>
             WINDOWPLACEMENT placement;
             placement.length = sizeof(WINDOWPLACEMENT);
 
@@ -1272,6 +1322,8 @@ bool LLWindowWin32::setSizeImpl(const LLCoordScreen size)
             if (GetWindowPlacement(mWindowHandle, &placement))
             {
                 placement.showCmd = SW_RESTORE;
+                if (gIbashoNoActivate) // Ibasho: SW_RESTORE activates (and shows) the window
+                    placement.showCmd = IsWindowVisible(mWindowHandle) ? SW_SHOWNOACTIVATE : SW_HIDE;
                 SetWindowPlacement(mWindowHandle, &placement);
             }
         });
@@ -3963,6 +4015,7 @@ bool LLWindowWin32::getClientRectInScreenSpace( RECT* rectp )
 
 void LLWindowWin32::flashIcon(F32 seconds)
 {
+    if (gIbashoNoActivate) return; // Ibasho: no taskbar flashing
     mWindowThread->post([=]()
         {
             FLASHWINFO flash_info;
@@ -4224,6 +4277,8 @@ LLSplashScreenWin32::~LLSplashScreenWin32()
 
 void LLSplashScreenWin32::showImpl()
 {
+    if (gIbashoNoActivate) return; // Ibasho: no splash, which would pop up over whatever the person is doing
+
     // This appears to work.  ???
     HINSTANCE hinst = GetModuleHandle(NULL);
 
@@ -4381,7 +4436,7 @@ void LLWindowWin32::spawnWebBrowser(const std::string& escaped_url, bool async)
     {
         sei.fMask = SEE_MASK_ASYNCOK;
     }
-    sei.nShow = SW_SHOWNORMAL;
+    sei.nShow = gIbashoNoActivate ? SW_SHOWNOACTIVATE : SW_SHOWNORMAL; // Ibasho: a request (browsers may not honour it)
     sei.lpVerb = L"open";
     sei.lpFile = url_utf16.c_str();
     ShellExecuteEx( &sei );
@@ -4444,7 +4499,7 @@ void *LLWindowWin32::getPlatformWindow()
 
 void LLWindowWin32::bringToFront()
 {
-    if (gIbashoSpectator) return; // Ibasho spectator
+    if (gIbashoSpectator || gIbashoNoActivate) return; // Ibasho
     mWindowThread->post([=]()
         {
             BringWindowToTop(mWindowHandle);
@@ -4454,7 +4509,7 @@ void LLWindowWin32::bringToFront()
 // set (OS) window focus back to the client
 void LLWindowWin32::focusClient()
 {
-    if (gIbashoSpectator) return; // Ibasho spectator
+    if (gIbashoSpectator || gIbashoNoActivate) return; // Ibasho
     mWindowThread->post([=]()
         {
             SetFocus(mWindowHandle);

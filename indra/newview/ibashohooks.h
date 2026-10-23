@@ -58,6 +58,9 @@ namespace ibasho
     void initSpectator();
     // LLWindow mouse events from LEAP; while spectating, the window's cursor position follows them.
     void onInjectedMouse(const LLCoordGL& pos);
+    // Mirror the IbashoNoActivate setting into the window layer (the viewer never activates or raises its
+    // window); from LLAppViewer::initConfiguration, before the splash screen.
+    void initNoActivate();
 
     // Hard limits (ibasholimits.cpp), checked where the viewer sends, so they hold for UI clicks and keys
     // sent over LEAP too. Each returns false, after a notice and an IbashoEvents "refused" event, to refuse.

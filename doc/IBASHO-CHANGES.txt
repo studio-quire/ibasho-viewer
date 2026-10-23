@@ -19,8 +19,9 @@ indra/llui/llfloater.cpp
     Modified for Ibasho (2026-10-10, 2026-10-22): a hook that lets newview hold a floater hidden
     (IbashoAgent streamUI).
 indra/llwindow/llwindowwin32.cpp
-    Modified for Ibasho (2026-10-11, 2026-10-22): spectator mode (the real mouse and keyboard
-    don't reach the viewer while LEAP drives it); the splash says Ibasho.
+    Modified for Ibasho (2026-10-11, 2026-10-22, 2026-10-23): spectator mode (the real mouse and
+    keyboard don't reach the viewer while LEAP drives it); the splash says Ibasho; the viewer never
+    activates or raises its own window (IbashoNoActivate).
 indra/media_plugins/CMakeLists.txt
     Modified for Ibasho (2026-10-23): no LibVLC media plugin (VLC is GPL; the CEF plugin plays
     media).
@@ -32,9 +33,9 @@ indra/newview/VIEWER_VERSION.txt
 indra/newview/app_settings/settings.xml
     Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23): settings for the Ibasho
     LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost,
-    IbashoSpectator, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy); Report
-    Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up
-    (UpdaterShowReleaseNotes).
+    IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay, IbashoAllowLandBuy,
+    IbashoAllowCurrencyBuy); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release
+    notes pop up (UpdaterShowReleaseNotes).
 indra/newview/app_settings/settings_per_account.xml
     Modified for Ibasho (2026-10-22): chat and IM transcripts off by default (LogNearbyChat,
     KeepConversationLogTranscripts).
@@ -70,7 +71,8 @@ indra/newview/licenses-win32.txt
     perftools) and OpenJPEG's license added (a data file, packaged as licenses.txt).
 indra/newview/llappviewer.cpp
     Modified for Ibasho (2026-10-22, 2026-10-23): the app folder is named Ibasho; the splash text
-    uses the app name; no update checks with Linden Lab's update service; no LibVLC.
+    uses the app name; no update checks with Linden Lab's update service; no LibVLC; the window
+    never takes focus by itself (IbashoNoActivate, set up before the splash).
 indra/newview/llappviewer.h
     Modified for Ibasho (2026-10-22): the window class is Ibasho's own.
 indra/newview/llappviewerwin32.cpp

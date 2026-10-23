@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes). Changes are marked "Ibasho". -->
+<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes). Changes are marked "Ibasho". -->
 <llsd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="llsd.xsd">
 <map>
@@ -11942,6 +11942,17 @@
     <map>
       <key>Comment</key>
       <string>Ibasho: ignore the real mouse and keyboard (LEAP input still works); clicks don't focus the window. Not saved, so every launch starts on.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>IbashoNoActivate</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: the viewer never activates or raises its own window: it appears behind the window in use, without a splash screen or taskbar flashing (you can still click it, Alt+Tab to it and so on). Not saved, so every launch starts on unless the command line says otherwise (--set IbashoNoActivate 0).</string>
       <key>Persist</key>
       <integer>0</integer>
       <key>Type</key>
