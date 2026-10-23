@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!-- Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho) text applies. Changes are marked "Ibasho". -->
 <notifications>
 	<global name="skipnexttime">
 		Nie pokazuj tego ponownie
@@ -1556,10 +1557,6 @@ Wybierz obiekt na sprzedaż i spróbuj jeszcze raz.
 	<notification name="FinishedRawDownload">
 		Plik surowego terenu pobrany do:
 [DOWNLOAD_PATH].
-	</notification>
-	<notification name="RequiredUpdate">
-		Do zalogowania się wymagana jest wersja [VERSION].
-Pobierz ją z https://secondlife.com/support/downloads/
 	</notification>
 	<notification name="PauseForUpdate">
 		Do zalogowania się wymagana jest wersja [VERSION].

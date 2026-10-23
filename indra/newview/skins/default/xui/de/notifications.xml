@@ -1,4 +1,5 @@
 <?xml version="1.0" ?>
+<!-- Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho) text applies. Changes are marked "Ibasho". -->
 <notifications>
 	<global name="skipnexttime">Nicht mehr anzeigen</global>
 	<global name="skipnexttimesessiononly">Nicht mehr anzeigen 
@@ -1236,11 +1237,6 @@ Ersetzen Sie die Textur [TEXTURE_NUM] mit einer Bilddatei von maximal 512x512 un
 Geben Sie das Objekt zum Verkauf frei und versuchen Sie es erneut.</notification>
 	<notification name="FinishedRawDownload">Raw-Terrain-Datei wurde heruntergeladen nach:
 [DOWNLOAD_PATH].</notification>
-	<notification name="RequiredUpdate">
-		Für die Anmeldung ist Version [VERSION] erforderlich. 
-Bitte laden Sie die Datei unter https://secondlife.com/support/downloads/ herunter.
-		<usetemplate name="okbutton" yestext="OK"/>
-	</notification>
 	<notification name="PauseForUpdate">
 		Für die Anmeldung ist Version [VERSION] erforderlich. 
 Klicken Sie zum Herunterladen und Installieren auf OK.

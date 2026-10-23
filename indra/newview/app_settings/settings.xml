@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy). Changes are marked "Ibasho". -->
+<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes). Changes are marked "Ibasho". -->
 <llsd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="llsd.xsd">
 <map>
@@ -10286,13 +10286,13 @@
 		<key>ReportBugURL</key>
 		<map>
 			<key>Comment</key>
-			<string>URL used for filing bugs from viewer</string>
+			<string>Ibasho: URL used for filing bugs from the viewer (Help &gt; Report Bug): Ibasho's issue tracker, not Linden Lab's. PLACEHOLDER until the project is published: put the real repository here.</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
 			<string>String</string>
 			<key>Value</key>
-			<string>https://feedback.secondlife.com/</string>
+			<string>https://github.com/OWNER/ibasho/issues</string>
 		</map>
 	<key>RevokePermsOnStopAnimation</key>
     <map>
@@ -13288,13 +13288,13 @@
     <key>UpdaterShowReleaseNotes</key>
     <map>
         <key>Comment</key>
-        <string>Enables displaying of the Release notes in a web floater after update. 0 - don't show, 1 - show, 2 - show even for test viewers</string>
+        <string>Enables displaying of the Release notes in a web floater after update. 0 - don't show, 1 - show, 2 - show even for test viewers. Ibasho: 0, Ibasho has no updater and Linden Lab's release notes aren't Ibasho's.</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
         <string>S32</string>
         <key>Value</key>
-        <integer>1</integer>
+        <integer>0</integer>
     </map>
     <key>UploadBakedTexOld</key>
     <map>

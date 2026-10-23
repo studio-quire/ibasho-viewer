@@ -26,7 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
 $/LicenseInfo$
 """
-# Modified for Ibasho (2026-10-22): app, executable and installer names (Ibasho, IbashoViewer.exe).
+# Modified for Ibasho (2026-10-22, 2026-10-23): app, executable and installer names (Ibasho,
+# IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update service.
 # Changes are marked "Ibasho".
 import errno
 import glob
@@ -179,12 +180,12 @@ class ViewerManifest(LLManifest):
 
             #build_data.json.  Standard with exception handling is fine.  If we can't open a new file for writing, we have worse problems
             #platform is computed above with other arg parsing
+            # Ibasho: the channel base is Ibasho, not Linden Lab's product; no update service (Ibasho has none)
             build_data_dict = {"Type":"viewer","Version":'.'.join(self.args['version']),
-                            "Channel Base": CHANNEL_VENDOR_BASE,
+                            "Channel Base": self.app_name(),
                             "Channel":self.channel_with_pkg_suffix(),
                             "Platform":self.build_data_json_platform,
                             "Address Size":self.address_size,
-                            "Update Service":"https://update.secondlife.com/update",
                             }
             # Only store this if it's both present and non-empty
             bugsplat_db = self.args.get('bugsplat')

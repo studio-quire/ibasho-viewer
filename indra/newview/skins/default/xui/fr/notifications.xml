@@ -1,4 +1,5 @@
 <?xml version="1.0" ?>
+<!-- Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho) text applies. Changes are marked "Ibasho". -->
 <notifications>
 	<global name="skipnexttime">Ne plus afficher</global>
 	<global name="skipnexttimesessiononly">Ne plus afficher 
@@ -1219,11 +1220,6 @@ Dépasse la limite fixée à [MAX_AGENTS] [LIST_TYPE] de [NUM_EXCESS].</notifica
 Veuillez choisir un objet à vendre et réessayer.</notification>
 	<notification name="FinishedRawDownload">Téléchargement du fichier de terrain raw effectué vers :
 [DOWNLOAD_PATH].</notification>
-	<notification name="RequiredUpdate">
-		La version [VERSION] est nécessaire pour vous connecter. 
-Veuillez télécharger la dernière version sur https://secondlife.com/support/downloads/
-		<usetemplate name="okbutton" yestext="OK"/>
-	</notification>
 	<notification name="PauseForUpdate">
 		La version [VERSION] est nécessaire pour vous connecter. 
 Cliquez sur OK pour télécharger et installer.

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho) text applies. Changes are marked "Ibasho". -->
 <notifications>
 	<global name="skipnexttime">
 		不再顯示此提醒
@@ -1603,11 +1604,6 @@ SHA1 指紋：[MD5_DIGEST]
 	<notification name="FinishedRawDownload">
 		原始地形檔案下載完成：
 [DOWNLOAD_PATH]。
-	</notification>
-	<notification name="RequiredUpdate">
-		必須用[VERSION]版本登入。
-請到 http://secondlife.com/support/ 下載更新版
-		<usetemplate name="okbutton" yestext="確定"/>
 	</notification>
 	<notification name="PauseForUpdate">
 		必須用[VERSION]版本登入。

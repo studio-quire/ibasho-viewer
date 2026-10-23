@@ -23,6 +23,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-23): the Ibasho channel counts as a release channel (normal menu bar
+ * colour). Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -140,7 +143,11 @@ LLVersionInfo::ViewerMaturity LLVersionInfo::getViewerMaturity() const
     static const boost::regex is_project_channel("\\bProject\\b");
     static const boost::regex is_release_channel("\\bRelease\\b");
 
-    if (ll_regex_search(channel, is_release_channel))
+    if (channel == "Ibasho") // Ibasho: its own releases; not "Second Life Release", which is Linden Lab's
+    {
+        maturity = RELEASE_VIEWER;
+    }
+    else if (ll_regex_search(channel, is_release_channel))
     {
         maturity = RELEASE_VIEWER;
     }

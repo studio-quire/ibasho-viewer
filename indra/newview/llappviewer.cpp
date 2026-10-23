@@ -23,8 +23,8 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  *
- * Modified for Ibasho (2026-10-22): the app folder is named Ibasho; the splash text uses the app
- * name. Changes are marked "Ibasho".
+ * Modified for Ibasho (2026-10-22, 2026-10-23): the app folder is named Ibasho; the splash text uses
+ * the app name; no update checks with Linden Lab's update service. Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -1156,17 +1156,9 @@ bool LLAppViewer::init()
 
     gGLActive = false;
 
-#if !LL_LINUX
-    // Launch VVM update check (Linux updater is future work: Velopack port)
-    if (!gSavedSettings.getBOOL("CmdLineSkipUpdater") && !gNonInteractive)
-    {
-        initVVMUpdateCheck();
-    }
-    else
-#endif
-    {
-        LL_WARNS("InitInfo") << "Skipping updater check." << LL_ENDL;
-    }
+    // Ibasho: no update check. Linden Lab's update service (VVM) is for Linden Lab's viewers; Ibasho
+    // never asks it, never offers to update and never downloads anything by itself.
+    LL_INFOS("InitInfo") << "No update checks in Ibasho." << LL_ENDL;
 
     {
         // Iterate over --leap command-line options. But this is a bit tricky: if

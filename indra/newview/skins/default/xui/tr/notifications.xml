@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho) text applies. Changes are marked "Ibasho". -->
 <notifications>
 	<global name="skipnexttime">
 		Bunu bir daha gösterme
@@ -1617,11 +1618,6 @@ Nesneyi satılık olarak ayarlayıp tekrar deneyin.
 	<notification name="FinishedRawDownload">
 		İşlenmemiş yüzey dosyasının şu konuma karşıdan yüklenmesi tamamlandı:
 [DOWNLOAD_PATH].
-	</notification>
-	<notification name="RequiredUpdate">
-		Oturum açmak için [VERSION] sürümü gerekli. 
-Lütfen https://secondlife.com/support/downloads/ adresinden indirin
-		<usetemplate name="okbutton" yestext="Tamam"/>
 	</notification>
 	<notification name="PauseForUpdate">
 		Oturum açmak için [VERSION] sürümü gerekli. 

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Modified for Ibasho (2026-10-23): Linden Lab's bug-reporting links removed from the hidden Deprecated menu's Help (Help > Report Bug goes to Ibasho's issue tracker). Changes are marked "Ibasho". -->
 <menu_bar
  bg_visible="false"
  follows="left|top|right"
@@ -4802,55 +4803,7 @@ function="World.EnvPreset"
                  name="ScriptingPortal_url"
                  parameter="WebLaunchLSLWiki,http://wiki.secondlife.com/wiki/LSL_Portal" />
             </menu_item_call>
-            <menu
-             create_jump_keys="true"
-             label="Bug Reporting"
-             name="Bug Reporting"
-             tear_off="true">
-                <menu_item_call
-                 label="Public Issue Tracker"
-                 name="Public Issue Tracker">
-                    <menu_item_call.on_click
-                     function="PromptShowURL"
-                     name="PublicIssueTracker_url"
-                     parameter="WebLaunchPublicIssue,https://feedback.secondlife.com/" />
-                </menu_item_call>
-                <menu_item_call
-                 label="Public Issue Tracker Help"
-                 name="Publc Issue Tracker Help">
-                    <menu_item_call.on_click
-                     function="PromptShowURL"
-                     name="PublicIssueTrackerHelp_url"
-                     parameter="WebLaunchPublicIssueHelp,http://wiki.secondlife.com/wiki/Issue_tracker" />
-                </menu_item_call>
-
-                <menu_item_separator/>
-
-                <menu_item_call
-                 label="Bug Reporting 101"
-                 name="Bug Reporing 101">
-                    <menu_item_call.on_click
-                     function="PromptShowURL"
-                     name="BugReporting101_url"
-                     parameter="WebLaunchBugReport101,http://wiki.secondlife.com/wiki/Bug_Reporting_101" />
-                </menu_item_call>
-                <menu_item_call
-                 label="Security Issues"
-                 name="Security Issues">
-                    <menu_item_call.on_click
-                     function="PromptShowURL"
-                     name="SecurityIssues_url"
-                     parameter="WebLaunchSecurityIssues,http://wiki.secondlife.com/wiki/Security_issues" />
-                </menu_item_call>
-                <menu_item_call
-                 label="QA Wiki"
-                 name="QA Wiki">
-                    <menu_item_call.on_click
-                     function="PromptShowURL"
-                     name="QAWiki_url"
-                     parameter="WebLaunchQAWiki,http://wiki.secondlife.com/wiki/QA_Portal" />
-                </menu_item_call>
-            </menu>
+            <!-- Ibasho: Linden Lab's bug-reporting links (its issue tracker and wiki pages) removed; Help > Report Bug goes to Ibasho's tracker -->
         </menu>
     </menu>
 </menu_bar>

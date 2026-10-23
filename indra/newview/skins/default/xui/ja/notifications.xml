@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho) text applies. Changes are marked "Ibasho". -->
 <notifications>
 	<global name="skipnexttime">
 		次回からこのメッセージを表示しない
@@ -2352,13 +2353,6 @@ SHA1フィンガープリント：[MD5_DIGEST]
 	</notification>
 	<notification name="FinishedRawDownload">
 		未加工の地形ファイルをダウンロードしました：[DOWNLOAD_PATH]
-	</notification>
-	<notification name="RequiredUpdate">ログインするには、バージョン[VERSION]が必要です。以下からダウンロードしてください。
-https://secondlife.com/support/downloads/
-    <tag>
-			confirm
-		</tag>
-		<usetemplate name="okbutton" yestext="ＯＫ"/>
 	</notification>
 	<notification name="PauseForUpdate">ログインするには、バージョン[VERSION]が必要です。
 リリースノート：[URL]

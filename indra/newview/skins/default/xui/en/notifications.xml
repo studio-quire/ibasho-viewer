@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Modified for Ibasho (2026-10-23): when a grid asks for a newer viewer, RequiredUpdate doesn't send people to Linden Lab's viewer download. Changes are marked "Ibasho". -->
 <notifications>
     <global name="skipnexttime">
 
@@ -4415,12 +4416,13 @@ Finished download of raw terrain file to:
 
   <!-- RequiredUpdate does not display release notes URL because we don't get
        that from login.cgi's login failure message. -->
+  <!-- Ibasho: a newer Ibasho, not Linden Lab's download page -->
   <notification
    icon="alertmodal.tga"
    name="RequiredUpdate"
    type="alertmodal">
-Version [VERSION] is required for login.
-Please download from https://secondlife.com/support/downloads/
+The grid asks for a newer viewer (version [VERSION]) before you can log in.
+[APP_NAME] is not Linden Lab's viewer and doesn't update itself: look for a newer [APP_NAME] where you got this one.
     <tag>confirm</tag>
     <usetemplate
      name="okbutton"

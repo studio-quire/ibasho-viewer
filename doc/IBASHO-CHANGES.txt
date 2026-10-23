@@ -23,9 +23,11 @@ indra/newview/CMakeLists.txt
 indra/newview/VIEWER_VERSION.txt
     Modified for Ibasho (2026-10-22): Ibasho's own version number (a data file read by CMake).
 indra/newview/app_settings/settings.xml
-    Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22): settings for the Ibasho LEAP APIs
-    and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator,
-    IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy).
+    Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23): settings for the Ibasho
+    LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost,
+    IbashoSpectator, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy); Report
+    Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up
+    (UpdaterShowReleaseNotes).
 indra/newview/app_settings/settings_per_account.xml
     Modified for Ibasho (2026-10-22): chat and IM transcripts off by default (LogNearbyChat,
     KeepConversationLogTranscripts).
@@ -56,8 +58,8 @@ indra/newview/installers/windows/uninstall_icon.BMP
 indra/newview/installers/windows/uninstall_icon.ico
     Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
 indra/newview/llappviewer.cpp
-    Modified for Ibasho (2026-10-22): the app folder is named Ibasho; the splash text uses the app
-    name.
+    Modified for Ibasho (2026-10-22, 2026-10-23): the app folder is named Ibasho; the splash text
+    uses the app name; no update checks with Linden Lab's update service.
 indra/newview/llappviewer.h
     Modified for Ibasho (2026-10-22): the window class is Ibasho's own.
 indra/newview/llappviewerwin32.cpp
@@ -100,6 +102,9 @@ indra/newview/llspatialpartition.cpp
 indra/newview/lluilistener.cpp
     Modified for Ibasho (2026-10-10, 2026-10-22): UI.call replies with an error for an unknown
     function instead of crashing.
+indra/newview/llversioninfo.cpp
+    Modified for Ibasho (2026-10-23): the Ibasho channel counts as a release channel (normal menu
+    bar colour).
 indra/newview/llviewermessage.cpp
     Modified for Ibasho (2026-10-10, 2026-10-22): hook: balance replies are posted to
     IbashoEvents; payments within the spending caps.
@@ -150,68 +155,108 @@ indra/newview/skins/default/xui/da/strings.xml
 indra/newview/skins/default/xui/de/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/de/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/de/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/en/floater_about.xml
     Modified for Ibasho (2026-10-22): credits and licenses for Ibasho (base credited, Havok,
     Kakadu and Siren14 lines dropped, artwork notice).
+indra/newview/skins/default/xui/en/menu_viewer.xml
+    Modified for Ibasho (2026-10-23): Linden Lab's bug-reporting links removed from the hidden
+    Deprecated menu's Help (Help > Report Bug goes to Ibasho's issue tracker).
+indra/newview/skins/default/xui/en/notifications.xml
+    Modified for Ibasho (2026-10-23): when a grid asks for a newer viewer, RequiredUpdate doesn't
+    send people to Linden Lab's viewer download.
 indra/newview/skins/default/xui/en/panel_login.xml
     Modified for Ibasho (2026-10-22): a line with the viewer's name and version.
+indra/newview/skins/default/xui/en/panel_preferences_setup.xml
+    Modified for Ibasho (2026-10-23): the software update settings replaced by a line saying
+    Ibasho has no updater.
 indra/newview/skins/default/xui/en/strings.xml
-    Modified for Ibasho (2026-10-22): the app name is Ibasho; the About header names the base and
-    says who doesn't support it.
+    Modified for Ibasho (2026-10-22, 2026-10-23): the app name is Ibasho; the About header names
+    the base and says who doesn't support it; the freeze and missing-file messages don't send
+    people to Linden Lab's support for Ibasho's problems.
 indra/newview/skins/default/xui/es/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/es/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/es/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/fr/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/fr/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/fr/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/it/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/it/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/it/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/ja/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/ja/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/ja/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/pl/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/pl/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/pt/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/pt/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/pt/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/ru/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/ru/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/ru/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/tr/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/tr/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/tr/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/skins/default/xui/zh/floater_about.xml
     Modified for Ibasho (2026-10-22): the credits intro and licenses overrides removed, so the
     English (Ibasho) ones apply.
+indra/newview/skins/default/xui/zh/notifications.xml
+    Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho)
+    text applies.
 indra/newview/skins/default/xui/zh/strings.xml
     Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader
     overrides removed, so the English (Ibasho) ones apply.
 indra/newview/viewer_manifest.py
-    Modified for Ibasho (2026-10-22): app, executable and installer names (Ibasho,
-    IbashoViewer.exe).
+    Modified for Ibasho (2026-10-22, 2026-10-23): app, executable and installer names (Ibasho,
+    IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update service.

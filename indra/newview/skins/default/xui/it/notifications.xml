@@ -1,4 +1,5 @@
 <?xml version="1.0" ?>
+<!-- Modified for Ibasho (2026-10-23): the RequiredUpdate override removed, so the English (Ibasho) text applies. Changes are marked "Ibasho". -->
 <notifications>
 	<global name="skipnexttime">Non mostrare più la prossima volta</global>
 	<global name="skipnexttimesessiononly">Non mostrare più questo messaggio 
@@ -1224,11 +1225,6 @@ Non sono consentiti caratteri di punteggiatura.</notification>
 Imposta l'oggetto per la vendita e riprova.</notification>
 	<notification name="FinishedRawDownload">Hai terminato di scaricare il file del terreno nella cartella:
 [DOWNLOAD_PATH].</notification>
-	<notification name="RequiredUpdate">
-		Per effettuare l'accesso è richiesta la versione [VERSION]. 
-Scaricala dal sito https://secondlife.com/support/downloads/
-		<usetemplate name="okbutton" yestext="OK"/>
-	</notification>
 	<notification name="PauseForUpdate">
 		Per effettuare l'accesso è richiesta la versione [VERSION]. 
 Fai clic su OK per scaricarla e installarla.
