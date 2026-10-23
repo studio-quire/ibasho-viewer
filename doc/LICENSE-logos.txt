@@ -21,3 +21,33 @@ for example, after your own copyright notice acknowledging your use of
 the Second Life viewer artwork, in a text file distributed with your
 program, in your application's About window, or on a credits page for
 your work.
+
+----------------------------------------------------------------------
+Changes made for Ibasho (2026-10-22, 2026-10-23)
+
+Ibasho is a modified version of the Second Life viewer. It replaces these
+files with Ibasho's own artwork (a lit doorway mark and the word "Ibasho",
+drawn by Claude Opus 5.5 with a script; no Linden Lab artwork or marks in
+them), licensed under the same Creative Commons Attribution-Share Alike
+3.0 License:
+
+  indra/newview/icons/test/*                       application icons
+  indra/newview/res/icon1.ico, ll_icon_small.ico   application icons
+  indra/newview/installers/windows/*_icon.*        installer icons
+  indra/newview/skins/default/textures/windows/login_sl_logo*.png
+                                                   login screen logos
+  indra/newview/skins/default/textures/icons/SL_Logo.png
+                                                   a neutral badge for
+                                                   system messages
+  indra/newview/skins/default/textures/icons/hand.png
+                                                   the mark beside
+                                                   place links
+  indra/newview/skins/default/textures/icons/Inv_SysClosed.png,
+  Inv_SysOpen.png                                  system folders
+  indra/newview/skins/default/textures/icons/map_placeholder.png
+                                                   a place without a
+                                                   picture
+  indra/newview/skins/default/textures/taskpanel/TabIcon_Home_Selected.png
+                                                   a white doorway
+
+All other artwork is Linden Lab's, unchanged, under this Notice.
