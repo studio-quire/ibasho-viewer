@@ -12,6 +12,9 @@ doc/LICENSE-logos.txt
 indra/llfilesystem/lldir.cpp
     Modified for Ibasho (2026-10-22): the cache folder is named after the app (Ibasho) instead of
     SecondLife.
+indra/llplugin/llpluginclassmedia.cpp
+    Modified for Ibasho (2026-10-23): a hook that lets newview refuse a URL before a media plugin
+    loads it, and leave a page that a link or redirect took to such a URL.
 indra/llui/llfloater.cpp
     Modified for Ibasho (2026-10-10, 2026-10-22): a hook that lets newview hold a floater hidden
     (IbashoAgent streamUI).
@@ -113,6 +116,9 @@ indra/newview/lluilistener.cpp
 indra/newview/llversioninfo.cpp
     Modified for Ibasho (2026-10-23): the Ibasho channel counts as a release channel (normal menu
     bar colour).
+indra/newview/llviewermedia.cpp
+    Modified for Ibasho (2026-10-23): the built-in browser refuses files and pages on this machine
+    or its network before the MIME type probe asks for them.
 indra/newview/llviewermessage.cpp
     Modified for Ibasho (2026-10-10, 2026-10-22): hook: balance replies are posted to
     IbashoEvents; payments within the spending caps.

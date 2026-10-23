@@ -67,6 +67,11 @@ namespace ibasho
     bool allowSpend(S32 amount, const std::string& what);
     bool allowLandBuy();      // IbashoAllowLandBuy
     bool allowCurrencyBuy();  // IbashoAllowCurrencyBuy (buying L$ with real money)
+    // The built-in browser (web and media floaters, prim and parcel media, parcel music): files, and pages on
+    // this machine or its network (loopback, private, link-local and shared addresses, localhost names, any
+    // IPv6 literal) are refused, except the grid's own login pages. Checked before a navigation is sent and
+    // again when a link or redirect inside a page arrives somewhere (that request has gone out by then).
+    bool allowBrowserURL(const std::string& url);
 }
 
 #endif

@@ -22,11 +22,15 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-23): the built-in browser refuses files and pages on this machine or its
+ * network before the MIME type probe asks for them. Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
 
 #include "llviewermedia.h"
+#include "ibashohooks.h" // Ibasho
 
 #include "llagent.h"
 #include "llagentcamera.h"
@@ -2632,6 +2636,8 @@ void LLViewerMediaImpl::navigateInternal(bool should_log)
             LL_DEBUGS("Media") << "media id= " << mTextureId << " url=" << sanitized_url << ", mime_type=" << mMimeType << LL_ENDL;
         }
     }
+
+    if (!ibasho::allowBrowserURL(mMediaURL)) return; // Ibasho: not even the MIME type probe
 
     if(mNavigateSuspended)
     {

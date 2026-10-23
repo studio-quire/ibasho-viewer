@@ -24,6 +24,9 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  * @endcond
+ *
+ * Modified for Ibasho (2026-10-23): a hook that lets newview refuse a URL before a media plugin loads
+ * it, and leave a page a link or redirect inside it took to such a URL. Changes are marked "Ibasho".
  */
 
 #include "linden_common.h"
@@ -39,6 +42,10 @@ extern LLControlGroup gSavedSettings;
 #if LL_DARWIN || LL_LINUX
 extern bool gHiDPISupport;
 #endif
+
+// Ibasho: newview's check for URLs the built-in browser mustn't open (files, this machine or its network).
+// A plain pointer, so it's null before any dynamic initialisation and newview can set it from one.
+bool (*gIbashoAllowURL)(const std::string& url) = nullptr; // Ibasho
 
 static int LOW_PRIORITY_TEXTURE_SIZE_DEFAULT = 256;
 static const U32 MIN_DEBUG_PORT = 1024;
@@ -777,6 +784,8 @@ void LLPluginClassMedia::setCookie(std::string uri, std::string name, std::strin
 
 void LLPluginClassMedia::loadURI(const std::string &uri)
 {
+    if (gIbashoAllowURL && !gIbashoAllowURL(uri)) return; // Ibasho
+
     LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA, "load_uri");
 
     message.setValue("uri", uri);
@@ -1365,6 +1374,7 @@ void LLPluginClassMedia::receivePluginMessage(const LLPluginMessage &message)
         else if(message_name == "location_changed")
         {
             mLocation = message.getValue("uri");
+            if (gIbashoAllowURL && !gIbashoAllowURL(mLocation)) loadURI("about:blank"); // Ibasho: a link or redirect got there
             mediaEvent(LLPluginClassMediaOwner::MEDIA_EVENT_LOCATION_CHANGED);
         }
         else if(message_name == "click_href")
