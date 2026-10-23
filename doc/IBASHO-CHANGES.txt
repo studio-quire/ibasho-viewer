@@ -142,6 +142,9 @@ indra/newview/llvopartgroup.cpp
 indra/newview/llwindowlistener.cpp
     Modified for Ibasho (2026-10-11, 2026-10-22): hook: LEAP mouse events move the app's cursor
     in spectator mode.
+indra/newview/llworldmapmessage.cpp
+    Modified for Ibasho (2026-10-23): hook: map blocks go to IbashoAgent findRegion too (a region
+    looked up by name).
 indra/newview/pipeline.cpp
     Modified for Ibasho (2026-10-13, 2026-10-22): hooks that leave chosen avatars out of the
     window's frames (IbashoAgent hideAvatars).

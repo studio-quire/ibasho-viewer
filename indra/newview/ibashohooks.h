@@ -79,6 +79,10 @@ namespace ibasho
     bool onAvatarPickerReply(LLMessageSystem* msg, const LLUUID& query_id);
     void onAvatarGroupsReply(LLMessageSystem* msg);
     void onAvatarPicksReply(LLMessageSystem* msg);
+
+    // IbashoAgent findRegion (ibashoagent.cpp): each block of a MapBlockReply, as LLWorldMapMessage reads it.
+    // `map_layer`: the reply is to a map-layer request (a name search is one); an empty name ends a search.
+    void onMapBlock(bool map_layer, const std::string& name, U32 x_world, U32 y_world, U8 access);
 }
 
 #endif

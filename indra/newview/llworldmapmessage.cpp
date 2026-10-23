@@ -22,11 +22,15 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-10-23): hook: map blocks go to IbashoAgent findRegion too (a region looked up
+ * by name). Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
 
 #include "llworldmapmessage.h"
+#include "ibashohooks.h" // Ibasho
 #include "message.h"
 
 #include "llworldmap.h"
@@ -197,6 +201,7 @@ void LLWorldMapMessage::processMapBlockReply(LLMessageSystem* msg, void**)
 
         U32 x_world = (U32)(x_regions) * REGION_WIDTH_UNITS;
         U32 y_world = (U32)(y_regions) * REGION_WIDTH_UNITS;
+        ibasho::onMapBlock(agent_flags == LAYER_FLAG, name, x_world, y_world, accesscode); // Ibasho
 
         // Name shouldn't be empty unless region doesn't exist
         if (!name.empty())

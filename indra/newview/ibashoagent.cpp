@@ -32,6 +32,7 @@
 #include "llagentui.h"
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
+#include "llassetstorage.h"
 #include "llavatarappearancedefines.h"
 #include "llavatarnamecache.h"
 #include "llavatarpropertiesprocessor.h"
@@ -52,6 +53,7 @@
 #include "llinventorymodel.h"
 #include "lllocaltextureobject.h"
 #include "llmodaldialog.h"
+#include "llnotecard.h"
 #include "llnotifications.h"
 #include "llpermissionsflags.h"
 #include "llviewerassetupload.h"
@@ -67,6 +69,7 @@
 #include "llsdutil_math.h"
 #include "llstartup.h"
 #include "llstatusbar.h"
+#include "lltexteditor.h"
 #include "lltoast.h"
 #include "lltrans.h"
 #include "lltransactiontypes.h"
@@ -83,6 +86,7 @@
 #include "llviewerregion.h"
 #include "llvoavatarself.h"
 #include "llworld.h"
+#include "llworldmapmessage.h"
 #include "llcharacter.h"
 #include "lldrawable.h"
 #include "llspatialpartition.h"
@@ -90,6 +94,7 @@
 #include "llviewerpartsource.h"
 #include "llvopartgroup.h"
 #include "pipeline.h"
+#include "roles_constants.h"
 #include "message.h"
 
 #include <atomic>
@@ -721,6 +726,137 @@ void unwatch(const std::shared_ptr<Profile>& p)
 }
 } // namespace lookup
 
+// ---- readNotecard (2026-10-23, Claude Opus 5.5) ----
+// A notecard in my inventory, read as the notecard preview reads it (LLPreviewNotecard::loadAsset and
+// onLoadComplete): only with copy permission, the asset through the asset storage (the cache, else the grid), then
+// the Linden text parsed as LLViewerTextEditor::importBuffer does. Items embedded in the text become [type: name].
+namespace notecards
+{
+constexpr S32 MAX_FILE = 1024 * 1024; // a notecard's asset: its text (64 KB at most) and its embedded items
+constexpr S32 MAX_TEXT = LLNotecard::MAX_SIZE;
+
+struct Read
+{
+    bool done = false;
+    std::string error;
+    LLSD out;
+};
+
+std::string itemLabel(const std::vector<LLPointer<LLInventoryItem>>& items, size_t index)
+{
+    if (index >= items.size() || items[index].isNull())
+        return "[an item]";
+    const char* type = LLAssetType::lookup(items[index]->getType());
+    return llformat("[%s: %s]", type ? type : "item", items[index]->getName().c_str());
+}
+
+// The text an asset holds: Linden text (version 2: UTF-8 with embedded items as FIRST_EMBEDDED_CHAR + index;
+// version 1: bytes 0x80 + index), or plain text (version 0).
+void parse(const std::vector<char>& buf, LLSD& out, std::string& error)
+{
+    if (buf.size() > 19 && !strncmp(buf.data(), "Linden text version", 19))
+    {
+        LLNotecard nc(MAX_TEXT);
+        std::istringstream str(std::string(buf.data(), buf.size()));
+        if (!nc.importStream(str))
+        {
+            error = "its contents couldn't be read as a notecard";
+            return;
+        }
+        const auto& items = nc.getItems();
+        const std::string& raw = nc.getText();
+        std::string text;
+        if (nc.getVersion() == 1)
+        {
+            for (char c : raw)
+                text += (U8)c >= 0x80 ? itemLabel(items, (U8)c - 0x80) : std::string(1, c);
+        }
+        else
+        {
+            LLWString shown;
+            for (llwchar c : utf8str_to_wstring(raw))
+            {
+                if (c >= LLTextEditor::FIRST_EMBEDDED_CHAR && c <= LLTextEditor::LAST_EMBEDDED_CHAR)
+                    shown += utf8str_to_wstring(itemLabel(items, c - LLTextEditor::FIRST_EMBEDDED_CHAR));
+                else
+                    shown += c;
+            }
+            text = wstring_to_utf8str(shown);
+        }
+        LLSD listed = LLSD::emptyArray();
+        for (const auto& item : items)
+        {
+            if (item.notNull())
+            {
+                const char* type = LLAssetType::lookup(item->getType());
+                listed.append(llsd::map("name", item->getName(), "type", type ? type : "item"));
+            }
+        }
+        out["text"] = text;
+        out["items"] = listed;
+        return;
+    }
+    std::string text(buf.data(), strnlen(buf.data(), buf.size()));
+    if (text.size() > (size_t)MAX_TEXT)
+    {
+        text = utf8str_truncate(text, MAX_TEXT); // never half a character
+        out["truncated"] = true;
+    }
+    out["text"] = text;
+    out["items"] = LLSD::emptyArray();
+}
+
+void loaded(Read& r, const LLUUID& asset_id, LLAssetType::EType type, S32 status)
+{
+    r.done = true;
+    if (status != 0)
+    {
+        if (status == LL_ERR_INSUFFICIENT_PERMISSIONS)
+            r.error = "the grid refused to send it (no permission)";
+        else if (status == LL_ERR_ASSET_REQUEST_NOT_IN_DATABASE || status == LL_ERR_ASSET_REQUEST_NONEXISTENT_FILE)
+            r.error = "the grid has no contents for this notecard (its asset is missing)";
+        else
+            r.error = llformat("couldn't load it (asset status %d)", status);
+        return;
+    }
+    LLFileSystem file(asset_id, type, LLFileSystem::READ);
+    S32 len = file.getSize();
+    if (len > MAX_FILE)
+    {
+        r.error = llformat("it's too big to be a notecard (%d bytes)", len);
+        return;
+    }
+    std::vector<char> buf(llmax(len, 0));
+    if (len > 0 && !file.read((U8*)buf.data(), len))
+    {
+        r.error = "couldn't read it from the cache";
+        return;
+    }
+    parse(buf, r.out, r.error);
+}
+} // namespace notecards
+
+// ---- findRegion (2026-10-23, Claude Opus 5.5) ----
+// A region by name, as the world map's search finds it (MapNameRequest). The answer comes as map blocks: the
+// regions whose names match, then an empty block that ends the search (which the map's search list waits for too).
+// A hook in LLWorldMapMessage::processMapBlockReply hands each block over.
+namespace regions
+{
+struct Search
+{
+    std::string want;
+    bool ended = false;
+    LLSD found;
+    LLSD similar = LLSD::emptyArray();
+};
+std::vector<std::shared_ptr<Search>> sSearches;
+
+void forget(const std::shared_ptr<Search>& s)
+{
+    sSearches.erase(std::remove(sSearches.begin(), sSearches.end(), s), sSearches.end());
+}
+} // namespace regions
+
 class IbashoAgentListener : public LLEventAPI
 {
 public:
@@ -815,6 +951,20 @@ public:
             "{error} if no profile comes within [\"timeout\"] s (default 10).",
             &IbashoAgentListener::profile,
             llsd::map("id", LLSD(), "reply", LLSD()));
+        add("readNotecard",
+            "Read notecard [\"item_id\"] in my inventory as the notecard preview does (only with copy permission):\n"
+            "replies {item_id, name, text, items: [{name, type}], truncated?} once it has loaded, or {error} if it\n"
+            "can't be read or hasn't come within [\"timeout\"] s (default 20). Items embedded in the text show in\n"
+            "it as [type: name]; text is at most 64 KB.",
+            &IbashoAgentListener::readNotecard,
+            llsd::map("item_id", LLSD(), "reply", LLSD()));
+        add("findRegion",
+            "Look a region up by [\"name\"] on the world map, as the map's search does: replies {found: true,\n"
+            "region: {name, global: [x, y] (its south-west corner, metres), access, maturity}} or {found: false,\n"
+            "similar: [names]} once the map has answered, or {error} if it hasn't within [\"timeout\"] s\n"
+            "(default 10).",
+            &IbashoAgentListener::findRegion,
+            llsd::map("name", LLSD(), "reply", LLSD()));
         add("upload",
             "Upload file [\"path\"] (png/tga/bmp/jpg texture, wav sound, anim animation) as a new inventory\n"
             "item, paying the normal L$ upload fee. Optional [\"name\"] (default: file name), [\"desc\"],\n"
@@ -1437,6 +1587,94 @@ private:
         });
     }
 
+    void readNotecard(const LLSD& data)
+    {
+        LLUUID item_id = data["item_id"].asUUID();
+        if (item_id.isNull())
+            return replyError(data, "need an item_id: a notecard in my inventory");
+        if (!gAgent.getRegion() || LLStartUp::getStartupState() < STATE_STARTED || !gAssetStorage)
+            return replyError(data, "not in world yet");
+        LLViewerInventoryItem* item = gInventory.getItem(item_id);
+        if (item && item->getIsLinkType())
+            item = item->getLinkedItem();
+        if (!item)
+            return replyError(data, "no such item in my inventory");
+        if (item->getType() != LLAssetType::AT_NOTECARD)
+            return replyError(data, "\"" + item->getName() + "\" isn't a notecard");
+        if (!gAgent.allowOperation(PERM_COPY, item->getPermissions(), GP_OBJECT_MANIPULATE))
+            return replyError(data, "\"" + item->getName() + "\" is no-copy: its text can't be read (the viewer's "
+                                    "notecard window won't show it either)");
+        F64 timeout = data.has("timeout") ? llclamp(data["timeout"].asReal(), 1.0, 120.0) : 20.0;
+
+        auto r = std::make_shared<notecards::Read>();
+        r->out = llsd::map("item_id", item->getUUID(), "name", item->getName());
+        if (item->getAssetUUID().isNull())
+        {
+            r->out["text"] = ""; // a notecard nobody has written in yet
+            r->out["items"] = LLSD::emptyArray();
+            r->done = true;
+        }
+        else
+        {
+            gAssetStorage->getInvItemAsset(LLHost(), gAgent.getID(), gAgent.getSessionID(),
+                                           item->getPermissions().getOwner(), LLUUID::null, item->getUUID(),
+                                           item->getAssetUUID(), item->getType(),
+                                           [r](const LLUUID& asset_id, LLAssetType::EType type, void*, S32 status,
+                                               LLExtStat) { notecards::loaded(*r, asset_id, type, status); },
+                                           nullptr, true);
+        }
+        ibasho::deferReply(data, timeout, [r](LLSD& reply, bool expired)
+        {
+            if (!r->done && !expired)
+                return false;
+            if (!r->done)
+                reply["error"] = "the notecard didn't arrive in time";
+            else if (!r->error.empty())
+                reply["error"] = r->error;
+            else
+                for (const auto& [key, value] : llsd::inMap(r->out))
+                    reply[key] = value;
+            return true;
+        });
+    }
+
+    void findRegion(const LLSD& data)
+    {
+        std::string name = data["name"].asString();
+        LLStringUtil::trim(name);
+        if (name.empty())
+            return replyError(data, "need a region's name");
+        if (!gAgent.getRegion() || LLStartUp::getStartupState() < STATE_STARTED)
+            return replyError(data, "not in world yet");
+        F64 timeout = data.has("timeout") ? llclamp(data["timeout"].asReal(), 1.0, 60.0) : 10.0;
+        auto s = std::make_shared<regions::Search>();
+        s->want = name;
+        regions::sSearches.push_back(s);
+        LLWorldMapMessage::getInstance()->sendNamedRegionRequest(name);
+        ibasho::deferReply(data, timeout, [s](LLSD& reply, bool expired)
+        {
+            bool found = s->found.isDefined();
+            if (!found && !s->ended && !expired)
+                return false;
+            regions::forget(s);
+            if (found)
+            {
+                reply["found"] = true;
+                reply["region"] = s->found;
+            }
+            else if (s->ended)
+            {
+                reply["found"] = false;
+                reply["similar"] = s->similar;
+            }
+            else
+            {
+                reply["error"] = "the world map didn't answer in time";
+            }
+            return true;
+        });
+    }
+
     void upload(const LLSD& data)
     {
         const std::string path = data["path"].asString();
@@ -1791,6 +2029,29 @@ void ibasho::onAvatarPicksReply(LLMessageSystem* msg)
         }
         p.picks = true;
         p.last_at = lookup::now();
+    }
+}
+
+// findRegion's answers (see regions above). Only blocks of the map's own layer: a region-existence check (a
+// request for one block with null regions included) also sends empty blocks, which would end a search early.
+void ibasho::onMapBlock(bool map_layer, const std::string& name, U32 x_world, U32 y_world, U8 access)
+{
+    if (!map_layer || regions::sSearches.empty())
+        return;
+    // The block that ends a search names no region: an empty name, or (OpenSim) the searched-for name with the
+    // access code of a region that doesn't exist (255, which LLWorldMap::insertRegion refuses too).
+    const bool end = name.empty() || access == 255;
+    for (const auto& s : regions::sSearches)
+    {
+        if (end)
+            s->ended = true;
+        else if (s->found.isDefined())
+            continue;
+        else if (LLStringUtil::compareInsensitive(name, s->want) == 0)
+            s->found = llsd::map("name", name, "global", llsd::array((F64)x_world, (F64)y_world),
+                                 "access", (S32)access, "maturity", LLViewerRegion::accessToString(access));
+        else if (s->similar.size() < 20)
+            s->similar.append(name);
     }
 }
 
