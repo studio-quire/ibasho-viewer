@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader overrides removed, so the English (Ibasho) ones apply. Changes are marked "Ibasho". -->
+<!-- Modified for Ibasho (2026-10-22, 2026-10-23): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader overrides removed, so the English (Ibasho) ones apply; the LibVLC line removed from AboutLibs (no LibVLC in Ibasho). Changes are marked "Ibasho". -->
 <strings>
 	<string name="SECOND_LIFE">
 		Second Life
@@ -62,7 +62,6 @@ Memoria texture: [TEXTURE_MEMORY]MB
 	<string name="AboutLibs">
 		J2C Versione decoder: [J2C_VERSION] 
 Versione del driver audio: [AUDIO_DRIVER_VERSION][LIBCEF_VERSION]
-Versione LibVLC: [LIBVLC_VERSION] 
 Versione server voce: [VOICE_VERSION]
 	</string>
 	<string name="AboutTraffic">

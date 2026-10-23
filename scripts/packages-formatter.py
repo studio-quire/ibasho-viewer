@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
 $/LicenseInfo$
 """
+# Modified for Ibasho (2026-10-23): the About box's Licenses tab says Linden Lab's copyright is for the
+# viewer Ibasho is built on, not for Ibasho. Changes are marked "Ibasho".
 import os
 import sys
 import errno
@@ -121,7 +123,8 @@ if any(pkgs for pkgs in list(dups.values())):
     sys.exit(1)
 
 print("%s %s" % (args.channel, args.version))
-print(viewer_copyright)
+# Ibasho: Linden Lab's copyright covers the base viewer's code; Linden Lab didn't make Ibasho
+print("Built on the Second Life viewer source code: " + viewer_copyright)
 version = list(info['versions'].items())
 version.sort()
 for pkg, pkg_version in version:

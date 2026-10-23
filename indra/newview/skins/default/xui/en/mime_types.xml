@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Modified for Ibasho (2026-10-23): audio and video types play in the CEF plugin (Ibasho has no LibVLC); the rtsp, example and libvlc schemes removed. Changes are marked "Ibasho". -->
 <mimetypes name="default">
 	<defaultlabel>
 		(Unknown)
@@ -122,39 +123,7 @@
 			false
 		</allow_looping>
 	</widgetset>
-	<scheme name="rtsp">
-		<label name="rtsp_label">
-			Real Time Streaming
-		</label>
-		<widgettype>
-			movie
-		</widgettype>
-		<impl>
-			media_plugin_libvlc
-		</impl>
-	</scheme>
-	<scheme name="example">
-		<label name="example_label">
-			Example Plugin scheme trigger
-		</label>
-		<widgettype>
-			movie
-		</widgettype>
-		<impl>
-			media_plugin_example
-		</impl>
-	</scheme>
-	<scheme name="libvlc">
-		<label name="libvlc_label">
-			LibVLC supported media
-		</label>
-		<widgettype>
-			movie
-		</widgettype>
-		<impl>
-			media_plugin_libvlc
-		</impl>
-	</scheme>
+	<!-- Ibasho: no rtsp, example or libvlc schemes (no LibVLC or example plugin in Ibasho); audio and video below play in CEF -->
 	<mimetype name="blank">
 		<label name="blank_label">
 			- None -
@@ -184,8 +153,9 @@
 		<widgettype>
 			audio
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="video/*">
@@ -195,8 +165,9 @@
 		<widgettype>
 			movie
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="image/*">
@@ -217,8 +188,9 @@
 		<widgettype>
 			movie
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="application/javascript">
@@ -327,8 +299,9 @@
 		<widgettype>
 			audio
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="audio/x-aiff">
@@ -338,8 +311,9 @@
 		<widgettype>
 			audio
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="audio/x-wav">
@@ -349,8 +323,9 @@
 		<widgettype>
 			audio
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype menu="1" name="image/bmp">
@@ -459,8 +434,9 @@
 		<widgettype>
 			movie
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="video/mp4">
@@ -470,8 +446,9 @@
 		<widgettype>
 			movie
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
     <mimetype name="video/x-flv">
@@ -481,8 +458,9 @@
         <widgettype>
             movie
         </widgettype>
+        <!-- Ibasho: was media_plugin_libvlc -->
         <impl>
-            media_plugin_libvlc
+            media_plugin_cef
         </impl>
     </mimetype>
   <mimetype name="application/octet-stream">
@@ -492,8 +470,9 @@
     <widgettype>
       movie
     </widgettype>
+    <!-- Ibasho: was media_plugin_libvlc -->
     <impl>
-      media_plugin_libvlc
+      media_plugin_cef
     </impl>
   </mimetype>
   <mimetype menu="1" name="video/quicktime">
@@ -503,8 +482,9 @@
 		<widgettype>
 			movie
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="video/x-ms-asf">
@@ -514,8 +494,9 @@
 		<widgettype>
 			movie
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 	<mimetype name="video/x-ms-wmv">
@@ -536,8 +517,9 @@
 		<widgettype>
 			movie
 		</widgettype>
+		<!-- Ibasho: was media_plugin_libvlc -->
 		<impl>
-			media_plugin_libvlc
+			media_plugin_cef
 		</impl>
 	</mimetype>
 </mimetypes>

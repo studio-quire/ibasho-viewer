@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Modified for Ibasho (2026-10-23): the LibVLC line removed from AboutLibs (no LibVLC in Ibasho). Changes are marked "Ibasho". -->
 <strings>
 	<string name="SUPPORT_SITE">
 		Portal Pomocy Second Life
@@ -59,7 +60,6 @@ Pamięć podręczna dysku (Disk cache): [DISK_CACHE_INFO]
 		Wersja dekodera J2C: [J2C_VERSION]
 Wersja sterownika dźwięku (Audio Driver): [AUDIO_DRIVER_VERSION]
 [LIBCEF_VERSION]
-Wersja LibVLC: [LIBVLC_VERSION]
 Wersja serwera głosu (Voice Server): [VOICE_VERSION]
 	</string>
 	<string name="AboutTraffic">

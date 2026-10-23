@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<!-- Modified for Ibasho (2026-10-22, 2026-10-23): the app name is Ibasho; the About header names the base and says who doesn't support it; the freeze and missing-file messages don't send people to Linden Lab's support for Ibasho's problems. Changes are marked "Ibasho". -->
+<!-- Modified for Ibasho (2026-10-22, 2026-10-23): the app name is Ibasho; the About header names the base and says who doesn't support it; the freeze and missing-file messages don't send people to Linden Lab's support for Ibasho's problems; no LibVLC line in About. Changes are marked "Ibasho". -->
 <!-- This file contains strings that used to be hardcoded in the source.
      It is only for those strings which do not belong in a floater.
      For example, the strings used in avatar chat bubbles, and strings
@@ -62,11 +62,11 @@ Disk cache: [DISK_CACHE_INFO]
   <string name="AboutOSXHiDPI">
 HiDPI display mode: [HIDPI]
 	</string>
+	<!-- Ibasho: no LibVLC Version line (no LibVLC in Ibasho) -->
 	<string name="AboutLibs">
 J2C Decoder Version: [J2C_VERSION]
 Audio Driver Version: [AUDIO_DRIVER_VERSION]
 [LIBCEF_VERSION]
-LibVLC Version: [LIBVLC_VERSION]
 Voice Server Version: [VOICE_VERSION]
 	</string>
 	<string name="AboutTraffic">Packets Lost: [PACKETS_LOST,number,0]/[PACKETS_IN,number,0] ([PACKETS_PCT,number,1]%)</string>

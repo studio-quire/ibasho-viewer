@@ -27,8 +27,8 @@ Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
 $/LicenseInfo$
 """
 # Modified for Ibasho (2026-10-22, 2026-10-23): app, executable and installer names (Ibasho,
-# IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update service.
-# Changes are marked "Ibasho".
+# IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update service; the
+# Windows package has no LibVLC (GPL) or example media plugin. Changes are marked "Ibasho".
 import errno
 import glob
 import itertools
@@ -601,14 +601,7 @@ class Windows_x86_64_Manifest(ViewerManifest):
                 with self.prefix(src=os.path.join('cef', self.args['configuration'])):
                     self.path("media_plugin_cef.dll")
 
-                # Media plugins - LibVLC
-                with self.prefix(src=os.path.join('libvlc', self.args['configuration'])):
-                    self.path("media_plugin_libvlc.dll")
-
-                # Media plugins - Example (useful for debugging - not shipped with release viewer)
-                if self.channel_type() != 'release':
-                    with self.prefix(src=os.path.join('example', self.args['configuration'])):
-                        self.path("media_plugin_example.dll")
+                # Ibasho: no LibVLC plugin (VLC is GPL; CEF plays media) and no example plugin
 
             # CEF runtime files - debug
             # CEF runtime files - not debug (release, relwithdebinfo etc.)
@@ -696,10 +689,7 @@ class Windows_x86_64_Manifest(ViewerManifest):
                 self.path("zh-CN.pak")
                 self.path("zh-TW.pak")
 
-            with self.prefix(src=os.path.join(pkgdir, 'bin', 'release')):
-                self.path("libvlc.dll")
-                self.path("libvlccore.dll")
-                self.path("plugins/")
+            # Ibasho: no libvlc.dll, libvlccore.dll or VLC plugins/
 
         if not self.is_packaging_viewer():
             self.package_file = "copied_deps"

@@ -24,7 +24,8 @@
  * $/LicenseInfo$
  *
  * Modified for Ibasho (2026-10-22, 2026-10-23): the app folder is named Ibasho; the splash text uses
- * the app name; no update checks with Linden Lab's update service. Changes are marked "Ibasho".
+ * the app name; no update checks with Linden Lab's update service; no LibVLC. Changes are marked
+ * "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -141,7 +142,6 @@
 #include "llcoros.h"
 #include "llexception.h"
 #include "cef/dullahan_version.h"
-#include "vlc/libvlc_version.h"
 
 #if LL_DARWIN
 #include "llwindowmacosx.h"
@@ -3659,13 +3659,7 @@ LLSD LLAppViewer::getViewerInfo() const
 
     info["LIBCEF_VERSION"] = cef_ver_codec.str();
 
-    std::ostringstream vlc_ver_codec;
-    vlc_ver_codec << LIBVLC_VERSION_MAJOR;
-    vlc_ver_codec << ".";
-    vlc_ver_codec << LIBVLC_VERSION_MINOR;
-    vlc_ver_codec << ".";
-    vlc_ver_codec << LIBVLC_VERSION_REVISION;
-    info["LIBVLC_VERSION"] = vlc_ver_codec.str();
+    // Ibasho: no LibVLC in this build (its media goes through CEF), so no LIBVLC_VERSION
 
     LLTrace::Recording& recording = LLViewerStats::instance().getRecording();
     S32 packets_in = (S32)recording.getSum(LLStatViewer::PACKETS_IN);

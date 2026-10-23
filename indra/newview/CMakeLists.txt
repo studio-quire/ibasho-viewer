@@ -1,6 +1,6 @@
 # -*- cmake -*-
-# Modified for Ibasho (2026-10-10, 2026-10-22): builds the Ibasho LEAP API files. Changes are marked
-# "Ibasho".
+# Modified for Ibasho (2026-10-10, 2026-10-22, 2026-10-23): builds the Ibasho LEAP API files; the
+# Windows viewer doesn't depend on the LibVLC or example media plugins. Changes are marked "Ibasho".
 
 project(viewer)
 
@@ -1877,8 +1877,7 @@ if (WINDOWS)
       ${viewer_APPSETTINGS_FILES}
       SLPlugin
       media_plugin_cef
-      media_plugin_libvlc
-      media_plugin_example
+      # Ibasho: no media_plugin_libvlc (GPL; CEF plays media) or media_plugin_example
       )
 
     if (TARGET ll::discord_sdk)

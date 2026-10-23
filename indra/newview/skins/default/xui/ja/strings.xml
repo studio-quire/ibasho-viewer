@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<!-- Modified for Ibasho (2026-10-22): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader overrides removed, so the English (Ibasho) ones apply. Changes are marked "Ibasho". -->
+<!-- Modified for Ibasho (2026-10-22, 2026-10-23): the APP_NAME, CAPITALIZED_APP_NAME and AboutHeader overrides removed, so the English (Ibasho) ones apply; the LibVLC line removed from AboutLibs (no LibVLC in Ibasho). Changes are marked "Ibasho". -->
 <strings>
 	<string name="SECOND_LIFE">
 		Second Life
@@ -67,7 +67,6 @@ LOD係数：[LOD_FACTOR]
 		J2Cデコーダバージョン：[J2C_VERSION]
 オーディオドライババージョン：[AUDIO_DRIVER_VERSION]
 LibCEFバージョン：[LIBCEF_VERSION]
-LibVLCバージョン：[LIBVLC_VERSION]
 ボイスサーバーバージョン：[VOICE_VERSION]
 	</string>
 	<string name="AboutTraffic">
