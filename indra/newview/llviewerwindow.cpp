@@ -23,8 +23,9 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  *
- * Modified for Ibasho (2026-10-11, 2026-10-22): hook: spectator mode is set up before the window
- * exists. Changes are marked "Ibasho".
+ * Modified for Ibasho (2026-10-11, 2026-10-22, 2026-11-02): hook: spectator mode is set up before the
+ * window exists; no web floaters preloaded without the web plugin (IbashoNoWebPlugin). Changes are marked
+ * "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -2482,7 +2483,7 @@ void LLViewerWindow::initWorldUI()
         physical_mem = LLMemory::getMaxMemKB();
     }
 
-    if (!gNonInteractive)
+    if (!gNonInteractive && ibasho::allowWebPlugin("media_plugin_cef")) // Ibasho
     {
         if (physical_mem > MIN_PHYSICAL_MEMORY)
         {

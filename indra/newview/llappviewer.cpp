@@ -23,9 +23,10 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  *
- * Modified for Ibasho (2026-10-22, 2026-10-23): the app folder is named Ibasho; the splash text uses
- * the app name; no update checks with Linden Lab's update service; no LibVLC; the window never takes
- * focus by itself (IbashoNoActivate, set up before the splash). Changes are marked "Ibasho".
+ * Modified for Ibasho (2026-10-22, 2026-10-23, 2026-11-02): the app folder is named Ibasho; the splash
+ * text uses the app name; no update checks with Linden Lab's update service; no LibVLC; the window never
+ * takes focus by itself (IbashoNoActivate, set up before the splash); a hook for the frame rate cap
+ * (IbashoMaxFPS, IbashoIdleFPS). Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -1567,6 +1568,8 @@ bool LLAppViewer::doFrame()
                     LLAppViewer::getTextureCache()->pause();
                 }
             }
+
+            ibasho::limitFrameRate(); // Ibasho
 
             if (mRandomizeFramerate)
             {

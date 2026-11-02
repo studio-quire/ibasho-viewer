@@ -86,6 +86,14 @@ namespace ibasho
     // IbashoAgent findRegion (ibashoagent.cpp): each block of a MapBlockReply, as LLWorldMapMessage reads it.
     // `map_layer`: the reply is to a map-layer request (a name search is one); an empty name ends a search.
     void onMapBlock(bool map_layer, const std::string& name, U32 x_world, U32 y_world, U8 access);
+
+    // Running on a server without a GPU (ibashoserver.cpp). At the end of each frame: sleeps as long as
+    // IbashoMaxFPS, or IbashoIdleFPS while no LEAP request has come for IbashoIdleAfter seconds, asks.
+    void limitFrameRate();
+    // false for the CEF (web) plugin when IbashoNoWebPlugin is on; the viewer then preloads no web floaters.
+    bool allowWebPlugin(const std::string& plugin_basename);
+    // IbashoTextureBudget in MB, or 0 for the viewer's own budget from the reported video memory.
+    F32 textureBudgetMB();
 }
 
 #endif

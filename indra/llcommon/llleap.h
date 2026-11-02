@@ -7,6 +7,9 @@
  * $LicenseInfo:firstyear=2012&license=viewerlgpl$
  * Copyright (c) 2012, Linden Research, Inc.
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-11-02): when a LEAP plugin last sent a request (for Ibasho's idle frame
+ * rate). Changes are marked "Ibasho".
  */
 
 #if ! defined(LL_LLLEAP_H)
@@ -87,6 +90,9 @@ public:
     };
 
     virtual ~LLLeap();
+
+    // Ibasho: LLTimer::getTotalSeconds() when any plugin's last request arrived (0: none yet)
+    static F64 lastRequestSeconds();
 
 protected:
     LLLeap();

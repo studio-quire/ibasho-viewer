@@ -7,6 +7,9 @@
  * $LicenseInfo:firstyear=2012&license=viewerlgpl$
  * Copyright (c) 2012, Linden Research, Inc.
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-11-02): when a LEAP plugin last sent a request (for Ibasho's idle frame
+ * rate). Changes are marked "Ibasho".
  */
 
 // Precompiled header
@@ -38,6 +41,10 @@
 
 LLLeap::LLLeap() {}
 LLLeap::~LLLeap() {}
+
+// Ibasho: requests arrive on the main thread
+static F64 sIbashoLastRequest = 0;
+F64 LLLeap::lastRequestSeconds() { return sIbashoLastRequest; }
 
 class LLLeapImpl: public LLLeap
 {
@@ -355,6 +362,7 @@ public:
                     {
                         // The LLSD object we got from our stream contains the
                         // keys we need.
+                        sIbashoLastRequest = LLTimer::getTotalSeconds(); // Ibasho
                         LLEventPumps::instance().obtain(data["pump"]).post(data["data"]);
                     }
                     catch (const std::exception& err)

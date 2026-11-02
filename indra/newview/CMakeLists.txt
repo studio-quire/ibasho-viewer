@@ -764,6 +764,7 @@ set(viewer_SOURCE_FILES
     ibashomesh.cpp
     ibashomove.cpp
     ibashoobjects.cpp
+    ibashoserver.cpp
     # </Ibasho>
     )
 

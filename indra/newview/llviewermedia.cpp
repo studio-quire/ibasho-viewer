@@ -23,8 +23,9 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  *
- * Modified for Ibasho (2026-10-23): the built-in browser refuses files and pages on this machine or its
- * network before the MIME type probe asks for them. Changes are marked "Ibasho".
+ * Modified for Ibasho (2026-10-23, 2026-11-02): the built-in browser refuses files and pages on this
+ * machine or its network before the MIME type probe asks for them; no web plugin at all when
+ * IbashoNoWebPlugin is on. Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -1780,6 +1781,11 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 
     std::string plugin_basename = LLMIMETypes::implType(media_type);
     LLPluginClassMedia* media_source = NULL;
+    if (!ibasho::allowWebPlugin(plugin_basename))
+    {
+        LL_INFOS_ONCE("Media") << "No web plugin (IbashoNoWebPlugin)" << LL_ENDL; // Ibasho
+        return NULL;
+    }
 
     // HACK: we always try to keep a spare running webkit plugin around to improve launch times.
     // If a spare was already created before PluginAttachDebuggerToPlugins was set, don't use it.

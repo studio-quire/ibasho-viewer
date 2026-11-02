@@ -23,11 +23,15 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-11-02): a texture budget that holds (IbashoTextureBudget). Changes are marked
+ * "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
 
 #include "llviewertexture.h"
+#include "ibashohooks.h" // Ibasho
 
 // Library includes
 #include "llmath.h"
@@ -519,6 +523,10 @@ void LLViewerTexture::updateClass()
     // can negatively impact performance, so leave 20% of a breathing room for
     // 'bias' calculation to kick in.
     F32 target = llmax(llmin(budget - 512.f, budget * 0.8f), MIN_VRAM_BUDGET);
+    if (ibasho::textureBudgetMB() > 0.f)
+    {
+        target = ibasho::textureBudgetMB(); // Ibasho: the whole budget, with no floor (IbashoTextureBudget)
+    }
     sFreeVRAMMegabytes = target - used;
 
     F32 over_pct = (used - target) / target;

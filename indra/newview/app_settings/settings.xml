@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23, 2026-11-02): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes). Changes are marked "Ibasho". -->
+<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23, 2026-11-02): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy; for servers: IbashoMaxFPS, IbashoIdleFPS, IbashoIdleAfter, IbashoNoWebPlugin, IbashoTextureBudget); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes). Changes are marked "Ibasho". -->
 <llsd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="llsd.xsd">
 <map>
@@ -12014,6 +12014,61 @@
       <string>S32</string>
       <key>Value</key>
       <integer>50</integer>
+    </map>
+    <key>IbashoMaxFPS</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: the most frames a second the viewer draws; 0 for no cap. For running without a GPU, where drawing takes every core it's given. Not saved.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.0</real>
+    </map>
+    <key>IbashoIdleFPS</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: the most frames a second while no LEAP plugin has sent a request for IbashoIdleAfter seconds, after login, and the avatar isn't on autopilot or teleporting; 0 for no idle cap. The first request after a quiet spell waits up to one idle frame. Not saved.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.0</real>
+    </map>
+    <key>IbashoIdleAfter</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: seconds without a LEAP request before IbashoIdleFPS applies. Not saved.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>5.0</real>
+    </map>
+    <key>IbashoNoWebPlugin</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: no web (CEF) plugin starts, so no web pages, web floaters or web media on prims, and none are preloaded; music and other media GStreamer plays still work. Set on the command line, before the login screen. Not saved.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>IbashoTextureBudget</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho: texture and vertex memory in MB the viewer keeps itself to, discarding detail beyond it; 0 for the viewer's own budget from the reported video memory (with software rendering, that is system memory). Measured the way the viewer measures it, which counts each byte about twice. Not saved.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>TextureCameraBoost</key>
     <map>
