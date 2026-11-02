@@ -26,9 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
 $/LicenseInfo$
 """
-# Modified for Ibasho (2026-10-22, 2026-10-23): app, executable and installer names (Ibasho,
+# Modified for Ibasho (2026-10-22, 2026-10-23, 2026-11-02): app, executable and installer names (Ibasho,
 # IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update service; the
-# Windows package has no LibVLC (GPL) or example media plugin. Changes are marked "Ibasho".
+# Windows and Linux packages have no LibVLC (GPL) or example media plugin. Changes are marked "Ibasho".
 import errno
 import glob
 import itertools
@@ -1369,18 +1369,13 @@ class LinuxManifest(ViewerManifest):
                 with self.prefix(src='cef'):
                     self.path("libmedia_plugin_cef.so")
 
-                # Media plugins - LibVLC
-                with self.prefix(src='libvlc'):
-                    self.path("libmedia_plugin_libvlc.so")
+                # Ibasho: no LibVLC media plugin (GPL; GStreamer and CEF play media)
 
                 # GStreamer 1.0 Media Plugin
                 with self.prefix(src='gstreamer10'):
                     self.path("libmedia_plugin_gstreamer10.so")
 
-                # Media plugins - Example (useful for debugging - not shipped with release viewer)
-                if self.channel_type() != 'release':
-                    with self.prefix(src='example'):
-                        self.path("libmedia_plugin_example.so")
+                # Ibasho: no example media plugin
 
 
         with self.prefix(src=os.path.join(pkgdir, 'lib', 'release'), dst="lib"):

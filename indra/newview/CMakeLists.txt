@@ -1,6 +1,6 @@
 # -*- cmake -*-
-# Modified for Ibasho (2026-10-10, 2026-10-22, 2026-10-23): builds the Ibasho LEAP API files; the
-# Windows viewer doesn't depend on the LibVLC or example media plugins. Changes are marked "Ibasho".
+# Modified for Ibasho (2026-10-10, 2026-10-22, 2026-10-23, 2026-11-02): builds the Ibasho LEAP API files;
+# the viewer doesn't depend on the LibVLC or example media plugins. Changes are marked "Ibasho".
 
 project(viewer)
 
@@ -2188,8 +2188,7 @@ if (LINUX)
     SLPlugin
     media_plugin_cef
     media_plugin_gstreamer10
-    media_plugin_libvlc
-    media_plugin_example
+    # Ibasho: no media_plugin_libvlc (GPL; GStreamer and CEF play media) or media_plugin_example
     llwebrtc
     )
 

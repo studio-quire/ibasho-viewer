@@ -26,8 +26,8 @@ indra/media_plugins/CMakeLists.txt
     Modified for Ibasho (2026-10-23): no LibVLC media plugin (VLC is GPL; the CEF plugin plays
     media).
 indra/newview/CMakeLists.txt
-    Modified for Ibasho (2026-10-10, 2026-10-22, 2026-10-23): builds the Ibasho LEAP API files;
-    the Windows viewer doesn't depend on the LibVLC or example media plugins.
+    Modified for Ibasho (2026-10-10, 2026-10-22, 2026-10-23, 2026-11-02): builds the Ibasho LEAP
+    API files; the viewer doesn't depend on the LibVLC or example media plugins.
 indra/newview/VIEWER_VERSION.txt
     Modified for Ibasho (2026-10-22): Ibasho's own version number (a data file read by CMake).
 indra/newview/app_settings/settings.xml
@@ -298,9 +298,9 @@ indra/newview/skins/default/xui/zh/strings.xml
     AboutHeader overrides removed, so the English (Ibasho) ones apply; the LibVLC line removed
     from AboutLibs (no LibVLC in Ibasho).
 indra/newview/viewer_manifest.py
-    Modified for Ibasho (2026-10-22, 2026-10-23): app, executable and installer names (Ibasho,
-    IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update service; the
-    Windows package has no LibVLC (GPL) or example media plugin.
+    Modified for Ibasho (2026-10-22, 2026-10-23, 2026-11-02): app, executable and installer names
+    (Ibasho, IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update
+    service; the Windows and Linux packages have no LibVLC (GPL) or example media plugin.
 scripts/packages-formatter.py
     Modified for Ibasho (2026-10-23): the About box's Licenses tab says Linden Lab's copyright is
     for the viewer Ibasho is built on, not for Ibasho.
