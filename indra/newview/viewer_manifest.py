@@ -27,8 +27,9 @@ Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
 $/LicenseInfo$
 """
 # Modified for Ibasho (2026-10-22, 2026-10-23, 2026-11-02): app, executable and installer names (Ibasho,
-# IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update service; the
-# Windows and Linux packages have no LibVLC (GPL) or example media plugin. Changes are marked "Ibasho".
+# IbashoViewer.exe, ibasho-viewer on Linux, without Linden Lab's desktop integration scripts); build_data.json
+# names Ibasho as the channel base and no update service; the Windows and Linux packages have no LibVLC (GPL)
+# or example media plugin. Changes are marked "Ibasho".
 import errno
 import glob
 import itertools
@@ -1321,6 +1322,12 @@ class Darwin_x86_64_Manifest(ViewerManifest):
 class LinuxManifest(ViewerManifest):
     build_data_json_platform = 'lnx'
 
+    def finish_build_data_dict(self, build_data_dict):
+        # Ibasho: the binary, as the Windows build names its exe
+        build_data_dict['Executable'] = 'bin/ibasho-viewer-bin'
+        build_data_dict['AppName'] = self.app_name()
+        return build_data_dict
+
     def construct(self):
         super(LinuxManifest, self).construct()
 
@@ -1332,16 +1339,13 @@ class LinuxManifest(ViewerManifest):
         debpkgdir = os.path.join(pkgdir, "lib", "debug")
 
         self.path("licenses-linux.txt","licenses.txt")
+        # Ibasho: its own start script and binary names, and no desktop menu entries, secondlife:// handler or
+        # installer (they'd install the viewer as "Second Life")
         with self.prefix("linux_tools"):
-            self.path("wrapper.sh","secondlife")
-            with self.prefix(dst="etc"):
-                self.path("handle_secondlifeprotocol.sh")
-                self.path("register_secondlifeprotocol.sh")
-                self.path("refresh_desktop_app_entry.sh")
-            self.path("install.sh")
+            self.path("ibasho-viewer.sh", "ibasho-viewer")
 
         with self.prefix(dst="bin"):
-            self.path("secondlife-bin","do-not-directly-run-secondlife-bin")
+            self.path("secondlife-bin", "ibasho-viewer-bin")
             self.path2basename("../llplugin/slplugin", "SLPlugin")
             #this copies over the python wrapper script, associated utilities and required libraries, see SL-321, SL-322 and SL-323
             #with self.prefix(src="../viewer_components/manager", dst=""):
@@ -1356,7 +1360,7 @@ class LinuxManifest(ViewerManifest):
         icon_path = self.icon_path()
         print("DEBUG: icon_path '%s'" % icon_path)
         with self.prefix(src=icon_path) :
-            self.path("secondlife_256.png","secondlife_icon.png")
+            self.path("secondlife_256.png", "ibasho-viewer.png") # Ibasho
             with self.prefix(dst="res-sdl") :
                 self.path("secondlife_256.BMP","ll_icon.BMP")
 

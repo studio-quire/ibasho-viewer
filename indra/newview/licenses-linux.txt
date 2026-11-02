@@ -1,3 +1,10 @@
+Licenses of the third-party software in this build of Ibasho (see also About > Licenses).
+Modified for Ibasho (2026-11-02): the Windows list's entries (as Ibasho changed it on 2026-10-23),
+with what differs on Linux: SDL3 (replacing LL's old SDL entry), and OpenAL Soft and freealut as
+Linux libraries. Linden Lab's entries for software Ibasho doesn't include are gone (the Logitech
+LCD SDK, FSI FontShop's Meta fonts, glh, Kakadu's JPEG2000, xmlrpc-epi, google-perftools, ELFIO,
+libuuid).
+
 ===========
 APR License
 ===========
@@ -107,21 +114,6 @@ FreeType License
 Portions of this software are copyright (c) 2003 The FreeType
 Project (www.freetype.org). All rights reserved. 
 
-==========================
-FSI FontShop International
-==========================
-
-Certain of the fonts in the Meta family of copyrighted typefaces are
-used in Second Life under license from FSI FontShop
-International. Copies of such Meta fonts that are included in the
-Viewer are not themselves open source and are not available under the
-GPL license, and they may not be copied.  Developers may use those
-fonts solely to the extent necessary to use or customize the Linden
-Software in Second Life and to develop and distribute content solely
-for use in the Second Life environment, and for no other purposes.
-Second Life developers who wish to make other uses of Meta fonts must
-obtain a license from FSI FontShop International at www.fontfont.com.
-
 ==========
 GL License
 ==========
@@ -148,49 +140,7 @@ BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-=========================
-glh OpenGL helper library
-=========================
-
-glh - is a platform-indepenedent C++ OpenGL helper library
-
-
-Copyright (c) 2000 Cass Everitt
-    Copyright (c) 2000 NVIDIA Corporation
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or
-    without modification, are permitted provided that the following
-    conditions are met:
-
- * Redistributions of source code must retain the above
-       copyright notice, this list of conditions and the following
-       disclaimer.
-
- * Redistributions in binary form must reproduce the above
-       copyright notice, this list of conditions and the following
-       disclaimer in the documentation and/or other materials
-       provided with the distribution.
-
- * The names of contributors to this software may not be used
-       to endorse or promote products derived from this software
-       without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-              LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-       FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-       REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-       INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-       BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-       LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-       CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-       LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-       ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-       POSSIBILITY OF SUCH DAMAGE.
-
-
-Cass Everitt - cass@r3.nu
-
+ 
 =======================
 JPEG Library 6b License
 =======================
@@ -198,32 +148,89 @@ JPEG Library 6b License
 This software is based in part on the work of the Independent JPEG Group
 
 ================
-JPEG2000 License
+OpenJPEG License
 ================
 
-Copyright 2001, David Taubman, The University of New South Wales (UNSW)
-The copyright owner is Unisearch Ltd, Australia (commercial arm of UNSW)
-Neither this copyright statement, nor the licensing details below
-may be removed from this file or dissociated from its contents.
+/*
+ * The copyright in this software is being made available under the 2-clauses 
+ * BSD License, included below. This software may be subject to other third 
+ * party and contributor rights, including patent rights, and no such rights
+ * are granted under this license.
+ *
+ * Copyright (c) 2002-2014, Universite catholique de Louvain (UCL), Belgium
+ * Copyright (c) 2002-2014, Professor Benoit Macq
+ * Copyright (c) 2003-2014, Antonin Descampe
+ * Copyright (c) 2003-2009, Francois-Olivier Devaux
+ * Copyright (c) 2005, Herve Drolon, FreeImage Team
+ * Copyright (c) 2002-2003, Yannick Verschueren
+ * Copyright (c) 2001-2003, David Janssens
+ * Copyright (c) 2011-2012, Centre National d'Etudes Spatiales (CNES), France 
+ * Copyright (c) 2012, CS Systemes d'Information, France
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS `AS IS'
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
-Licensee: Linden Research, Inc.
-License number: 00024
-The licensee has been granted a COMMERCIAL license to the contents of
-this source file.  A brief summary of this license appears below.  This
-summary is not to be relied upon in preference to the full text of the
-license agreement, accepted at purchase of the license.
-1. The Licensee has the right to Commercial Use of the Kakadu software,
-   including distribution of one or more Applications built using the
-   software.
-2. The Licensee has the right to Internal Use of the Kakadu software,
-   including use by employees of the Licensee or an Affiliate for the
-   purpose of performing services on behalf of the Licensee or Affiliate,
-   or in the performance of services for Third Parties who engage Licensee
-   or an Affiliate for such services.
-3. The Licensee has the right to distribute Reusable Code (including
-   source code and dynamically or statically linked libraries) to a Third
-   Party, provided the Third Party possesses a license to use the Kakadu
-   software.
+
+===============================
+OpenAL Soft and freealut (LGPL)
+===============================
+
+lib/libopenal.so.1 (OpenAL Soft 1.24.2) and lib/libalut.so.0 (freealut), which play the
+viewer's sound, are free software under the GNU Library General Public License, version 2
+or (at your option) any later version. They are unmodified builds by Linden Lab.
+Their complete source, with the scripts that build them, is at
+https://github.com/secondlife/3p-openal-soft, tag v1.24.2-r1 (OpenAL Soft itself:
+https://github.com/kcat/openal-soft). The license's full text is in
+licenses/openal-soft.txt beside this file in an Ibasho release, and at
+https://www.gnu.org/licenses/old-licenses/lgpl-2.0.html. You may replace these
+two libraries with your own builds of the same libraries.
+
+
+===========
+SDL License
+===========
+
+SDL3 (lib/libSDL3.so.0), Simple DirectMedia Layer
+
+Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+
+This software is provided 'as-is', without any express or implied
+warranty.  In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+
 
 ==================
 ogg/vorbis License
@@ -258,55 +265,6 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-===========
-SDL License
-===========
-
-SDL - Simple DirectMedia Layer
-Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002  Sam Lantinga
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
-
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the Free
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-Sam Lantinga
-slouken@libsdl.org
-
-The GNU Library GPL is available at http://www.gnu.org/copyleft/lesser.html
-
-=============
-ELFIO License
-=============
-
-ELFIO.h - ELF reader and producer.
-Copyright (C) 2001 Serge Lamikhov-Center <to_serge@users.sourceforge.net>
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-The GNU Library GPL is available at http://www.gnu.org/copyleft/lesser.html
 
 ===============
 OpenSSL License
@@ -426,54 +384,6 @@ copied and put under another distribution licence
 [including the GNU Public Licence.]
 
 
-==================
-xmlrpc-epi License
-==================
-
-Copyright 2000 Epinions, Inc.
-
-Subject to the following 3 conditions, Epinions, Inc. permits you, free of charge, to (a) use, copy, distribute, modify, perform and display this software and associated documentation files (the "Software"), and (b) permit others to whom the Software is furnished to do so as well.
-
-1) The above copyright notice and this permission notice shall be included without modification in all copies or substantial portions of the Software.
-
-2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT ANY WARRANTY OR CONDITION OF ANY KIND, EXPRESS, IMPLIED OR STATUTORY, INCLUDING WITHOUT LIMITATION ANY IMPLIED WARRANTIES OF ACCURACY, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
-
-3) IN NO EVENT SHALL EPINIONS, INC. BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES OR LOST PROFITS ARISING OUT OF OR IN CONNECTION WITH THE SOFTWARE (HOWEVER ARISING, INCLUDING NEGLIGENCE), EVEN IF EPINIONS, INC. IS AWARE OF THE POSSIBILITY OF SUCH DAMAGES. 
-
-
-===============
-libuuid License
-===============
-
-Copyright (C) 1999, 2000, 2003, 2004 by Theodore Ts'o
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-   notice, and the entire permission notice in its entirety,
-   including the disclaimer of warranties.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. The name of the author may not be used to endorse or promote
-   products derived from this software without specific prior
-   written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ALL OF
-WHICH ARE HEREBY DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
-OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF NOT ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGE.
-
-
 ============
 zlib License
 ============
@@ -505,39 +415,6 @@ jloup@gzip.org
 
 Mark Adler 
 madler@alumni.caltech.edu 
-
-=================================
-tcmalloc/Google perftools license
-=================================
-
-Copyright (c) 2005, Google Inc.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-    * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
-    * Neither the name of Google Inc. nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============
 libpng license
@@ -632,7 +509,86 @@ supporting the PNG file format in commercial products.  If you use this
 source code in a product, acknowledgment is not required but would be
 appreciated.
 
+
+=============
+meshoptimizer
+=============
+MIT License
+
+Copyright (c) 2016-2021 Arseny Kapoulkine
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+============
+tinygltf
+============
+MIT License
+
+Copyright (c) 2017 Syoyo Fujita, Aurélien Chatelain and many contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+==============
+Vulkan GLTF 
+==============
+MIT License
+
+Copyright (c) 2018 Sascha Willems
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+==============
 DejaVu Fonts
+==============
 MIT License
 
 Fonts are (c) Bitstream (see below). DejaVu changes are in public domain.
@@ -674,7 +630,9 @@ dealings in this Font Software without prior written authorization
 from Tavmjong Bah. For further information, contact: tavmjong @ free
 . fr.
 
+==============
 Twemoji Fonts
+==============
 MIT License
 
 Applies to "EmojiOne SVGinOT Font" code only
@@ -698,7 +656,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.
 
+==============
 WebRTC
+==============
 
 Copyright (c) 2011, The WebRTC project authors. All rights reserved.
 
@@ -730,7 +690,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+==============
 Google fonts
+==============
 SIL OPEN FONT LICENSE Version 1.1
 
 Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)

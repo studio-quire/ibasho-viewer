@@ -65,6 +65,10 @@ indra/newview/installers/windows/uninstall_icon.BMP
     Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
 indra/newview/installers/windows/uninstall_icon.ico
     Replaced for Ibasho (2026-10-22) with Ibasho's own artwork (see doc/LICENSE-logos.txt).
+indra/newview/licenses-linux.txt
+    Modified for Ibasho (2026-11-02): the Windows list's entries as Ibasho changed them, with SDL3
+    and the Linux OpenAL Soft and freealut libraries; entries for software Ibasho doesn't include
+    removed (a data file, packaged as licenses.txt).
 indra/newview/licenses-win32.txt
     Modified for Ibasho (2026-10-23): entries for software Ibasho doesn't include removed (the
     Logitech LCD SDK, FSI FontShop's Meta fonts, glh, Kakadu's JPEG2000, xmlrpc-epi, google-
@@ -299,8 +303,9 @@ indra/newview/skins/default/xui/zh/strings.xml
     from AboutLibs (no LibVLC in Ibasho).
 indra/newview/viewer_manifest.py
     Modified for Ibasho (2026-10-22, 2026-10-23, 2026-11-02): app, executable and installer names
-    (Ibasho, IbashoViewer.exe); build_data.json names Ibasho as the channel base and no update
-    service; the Windows and Linux packages have no LibVLC (GPL) or example media plugin.
+    (Ibasho, IbashoViewer.exe, ibasho-viewer on Linux, without Linden Lab's desktop integration
+    scripts); build_data.json names Ibasho as the channel base and no update service; the Windows
+    and Linux packages have no LibVLC (GPL) or example media plugin.
 scripts/packages-formatter.py
     Modified for Ibasho (2026-10-23): the About box's Licenses tab says Linden Lab's copyright is
     for the viewer Ibasho is built on, not for Ibasho.
