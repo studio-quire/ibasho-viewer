@@ -76,6 +76,7 @@
 #include "lluri.h"
 #include "lluserrelations.h"
 #include "llviewercontrol.h"
+#include "llviewerdisplayname.h"
 #include "llviewergenericmessage.h"
 #include "llviewerinventory.h"
 #include "llviewerjointattachment.h"
@@ -561,6 +562,24 @@ LLSD httpGet(const std::string& name, const std::string& url, F64 timeout, std::
     return result;
 }
 
+// A PUT as the profile window makes it (put_avatar_properties_coro), from inside a coroutine.
+bool httpPut(const std::string& name, const std::string& url, const LLSD& body, F64 timeout, std::string& error)
+{
+    LLCore::HttpRequest::policy_t policy(LLCore::HttpRequest::DEFAULT_POLICY_ID);
+    LLCoreHttpUtil::HttpCoroutineAdapter::ptr_t adapter =
+        std::make_shared<LLCoreHttpUtil::HttpCoroutineAdapter>(name, policy);
+    LLCore::HttpRequest::ptr_t request = std::make_shared<LLCore::HttpRequest>();
+    LLCore::HttpOptions::ptr_t options = std::make_shared<LLCore::HttpOptions>();
+    options->setTimeout((unsigned int)llmax(1, llceil((F32)timeout)));
+    options->setFollowRedirects(true);
+    LLSD result = adapter->putAndSuspend(request, url, body, options);
+    LLCore::HttpStatus status =
+        LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS]);
+    if (!status)
+        error = status.isHttpStatus() ? llformat("HTTP %d", (S32)status.getType()) : status.toString();
+    return (bool)status;
+}
+
 struct Search
 {
     LLUUID query_id; // set when searching by message
@@ -589,6 +608,7 @@ struct Profile
     LLUUID id;
     bool done = false;                                 // capability: the answer (or failure) is in
     bool props = false, groups = false, picks = false; // by message: what has arrived
+    bool mature_publish = false;                       // by message: kept for an update, not replied
     F64 props_at = 0.0, last_at = 0.0;
     std::string error;
     LLSD out = llsd::map("groups", LLSD::emptyArray(), "picks", LLSD::emptyArray()); // the reply's fields
@@ -691,6 +711,7 @@ public:
             out["transacted"] = (d.flags & AVATAR_TRANSACTED) != 0;
             if (!d.profile_url.empty())
                 out["web_url"] = d.profile_url;
+            p.mature_publish = (d.flags & AVATAR_MATURE_PUBLISH) != 0;
             p.props = true;
             p.props_at = p.last_at = now();
         }
@@ -724,6 +745,68 @@ void unwatch(const std::shared_ptr<Profile>& p)
     }
     if (!sProfiles.count(p->id))
         LLAvatarPropertiesProcessor::getInstance()->removeObserver(p->id, observer());
+}
+
+// ---- setProfile and setDisplayName (2026-11-03, Claude Opus 5.5) ----
+// My own profile as the profile window saves it: each field a PUT to the AgentProfile capability. Grids without
+// it (OpenSim) take the older AvatarPropertiesUpdate message, which carries every field, so my current profile is
+// read first and only the fields asked for change. The display name as the display name window sets it
+// (LLViewerDisplayName::set); the region answers later, by event.
+struct ProfileSave
+{
+    bool done = false;
+    std::string error;
+};
+
+void saveProfileCoro(std::string url, F64 timeout, LLSD fields, std::shared_ptr<ProfileSave> save)
+{
+    for (const auto& [key, value] : llsd::inMap(fields))
+    {
+        std::string error;
+        if (!httpPut("IbashoAgent::setProfile", url, llsd::map(key, value), timeout, error))
+        {
+            save->error = "the grid didn't take " + key + " (" + error + ")";
+            break;
+        }
+    }
+    save->done = true;
+}
+
+void sendLegacyProfile(const Profile& p, const LLSD& fields)
+{
+    const LLSD& out = p.out;
+    LLMessageSystem* msg = gMessageSystem;
+    msg->newMessageFast(_PREHASH_AvatarPropertiesUpdate);
+    msg->nextBlockFast(_PREHASH_AgentData);
+    msg->addUUIDFast(_PREHASH_AgentID, gAgentID);
+    msg->addUUIDFast(_PREHASH_SessionID, gAgentSessionID);
+    msg->nextBlockFast(_PREHASH_PropertiesData);
+    msg->addUUIDFast(_PREHASH_ImageID,
+                     fields.has("sl_image_id") ? fields["sl_image_id"].asUUID() : out["image_id"].asUUID());
+    msg->addUUIDFast(_PREHASH_FLImageID, out["first_life_image_id"].asUUID());
+    msg->addStringFast(_PREHASH_AboutText,
+                       fields.has("sl_about_text") ? fields["sl_about_text"].asString() : out["about"].asString());
+    msg->addStringFast(_PREHASH_FLAboutText, out["first_life"].asString());
+    msg->addBOOLFast(_PREHASH_AllowPublish, out["allow_publish"].asBoolean());
+    msg->addBOOLFast(_PREHASH_MaturePublish, p.mature_publish);
+    msg->addStringFast(_PREHASH_ProfileURL, out["web_url"].asString());
+    gAgent.sendReliableMessage();
+}
+
+struct NameSet
+{
+    bool done = false;
+    std::string error;
+    LLSD content;
+};
+
+// When my display name may change next (the grid allows about one change a week), as an ISO date; "" if now.
+std::string nextNameChange()
+{
+    LLAvatarName av;
+    if (!LLAvatarNameCache::get(gAgentID, &av) || av.mNextUpdate <= LLDate::now().secondsSinceEpoch())
+        return "";
+    return LLDate(av.mNextUpdate).asString();
 }
 } // namespace lookup
 
@@ -952,6 +1035,20 @@ public:
             "{error} if no profile comes within [\"timeout\"] s (default 10).",
             &IbashoAgentListener::profile,
             llsd::map("id", LLSD(), "reply", LLSD()));
+        add("setProfile",
+            "Set my own profile as the profile window saves it: [\"about\"] (the about text) and/or\n"
+            "[\"image_id\"] (the picture, a texture's asset id). Replies {} once the grid has taken them, or\n"
+            "{error}. Grids without the AgentProfile capability (OpenSim) get the older update message, which has\n"
+            "no answer: there the reply comes once it's sent ({by_message: true}), and only the fields given change.",
+            &IbashoAgentListener::setProfile,
+            llsd::map("reply", LLSD()));
+        add("setDisplayName",
+            "Set my display name to [\"name\"] (at most 31 characters; \"\" or my username goes back to the\n"
+            "username), as the display name window does. Second Life allows a change about once a week: replies\n"
+            "{display_name, next_change?} once the grid has answered, or {error} (with next_change when it's too\n"
+            "soon). Others see the new name within a few minutes; grids without display names say so.",
+            &IbashoAgentListener::setDisplayName,
+            llsd::map("name", LLSD(), "reply", LLSD()));
         add("readNotecard",
             "Read notecard [\"item_id\"] in my inventory as the notecard preview does (only with copy permission):\n"
             "replies {item_id, name, text, items: [{name, type}], truncated?} once it has loaded, or {error} if it\n"
@@ -1585,6 +1682,128 @@ private:
             }
             if (by_message && !(p->groups && p->picks))
                 reply["partial"] = true;
+            if (p->id == gAgentID && !lookup::nextNameChange().empty())
+                reply["display_name_next_change"] = lookup::nextNameChange();
+            return true;
+        });
+    }
+
+    void setProfile(const LLSD& data)
+    {
+        if (!gAgent.getRegion() || LLStartUp::getStartupState() < STATE_STARTED)
+            return replyError(data, "not in world yet");
+        LLSD fields = LLSD::emptyMap();
+        if (data.has("about"))
+            fields["sl_about_text"] = data["about"].asString();
+        if (data.has("image_id"))
+            fields["sl_image_id"] = data["image_id"].asUUID();
+        if (fields.size() == 0)
+            return replyError(data, "nothing to set: give about and/or image_id");
+        F64 timeout = data.has("timeout") ? llclamp(data["timeout"].asReal(), 1.0, 120.0) : 20.0;
+
+        std::string url = gAgent.getRegionCapability("AgentProfile");
+        if (!url.empty())
+        {
+            auto save = std::make_shared<lookup::ProfileSave>();
+            url += "/" + gAgentID.asString();
+            LLCoros::instance().launch("IbashoAgent::setProfile",
+                                       [url, timeout, fields, save]() { lookup::saveProfileCoro(url, timeout, fields, save); });
+            ibasho::deferReply(data, timeout * fields.size() + 1.0, [save](LLSD& reply, bool expired)
+            {
+                if (!save->done && !expired)
+                    return false;
+                if (!save->error.empty())
+                    reply["error"] = save->error;
+                else if (!save->done)
+                    reply["error"] = "the grid hasn't answered yet (the change may still go through)";
+                return true;
+            });
+            return;
+        }
+
+        auto p = std::make_shared<lookup::Profile>();
+        p->id = gAgentID;
+        lookup::watch(p);
+        LLAvatarPropertiesProcessor::getInstance()->sendAvatarLegacyPropertiesRequest(gAgentID);
+        ibasho::deferReply(data, timeout, [p, fields](LLSD& reply, bool expired)
+        {
+            if (!p->props && !expired)
+                return false;
+            lookup::unwatch(p);
+            if (!p->props)
+            {
+                reply["error"] = "the grid didn't send my current profile in time, so nothing was changed";
+                return true;
+            }
+            lookup::sendLegacyProfile(*p, fields);
+            reply["by_message"] = true;
+            return true;
+        });
+    }
+
+    void setDisplayName(const LLSD& data)
+    {
+        if (!gAgent.getRegion() || LLStartUp::getStartupState() < STATE_STARTED)
+            return replyError(data, "not in world yet");
+        if (!data["name"].isString())
+            return replyError(data, "need a name (\"\" for my username)");
+        std::string name = data["name"].asString();
+        LLStringUtil::trim(name);
+        if (gAgent.getRegionCapability("SetDisplayName").empty()
+            || !LLAvatarNameCache::getInstance()->hasNameLookupURL())
+            return replyError(data, "this grid has no display names: only the account name shows");
+        LLAvatarName av;
+        if (!LLAvatarNameCache::get(gAgentID, &av))
+            return replyError(data, "my own name hasn't loaded yet: try again in a moment");
+        std::string next = lookup::nextNameChange();
+        if (!next.empty())
+        {
+            LLEventAPI::Response response(llsd::map("next_change", next), data);
+            response.error("the display name can change about once a week; the next change can be made from " +
+                           next + " (UTC)");
+            return;
+        }
+        if (name == av.getUserName())
+            name.clear(); // a reset, as the window sends it
+        constexpr size_t MAX_CHARS = 31;
+        if (utf8str_to_wstring(name).size() > MAX_CHARS)
+            return replyError(data, llformat("a display name is at most %d characters", (S32)MAX_CHARS));
+
+        auto set = std::make_shared<lookup::NameSet>();
+        LLViewerDisplayName::set(name, [set](bool success, const std::string& reason, const LLSD& content)
+        {
+            set->done = true;
+            set->content = content;
+            if (success)
+                return;
+            LLSD desc = content["error_description"];
+            std::string lang = LLUI::getLanguage();
+            set->error = desc.has(lang) ? desc[lang].asString()
+                       : desc.has("en") ? desc["en"].asString()
+                       : !content["error_tag"].asString().empty() ? content["error_tag"].asString()
+                       : !reason.empty() ? reason : std::string("the grid refused it");
+        });
+        F64 timeout = data.has("timeout") ? llclamp(data["timeout"].asReal(), 1.0, 120.0) : 30.0;
+        ibasho::deferReply(data, timeout, [set, name](LLSD& reply, bool expired)
+        {
+            if (!set->done && !expired)
+                return false;
+            if (!set->done)
+            {
+                reply["error"] = "the grid hasn't answered yet (the change may still go through)";
+                return true;
+            }
+            if (!set->error.empty())
+            {
+                reply["error"] = set->error;
+                return true;
+            }
+            reply["display_name"] = set->content.has("display_name") ? set->content["display_name"].asString() : name;
+            std::string next = lookup::nextNameChange();
+            if (!next.empty())
+                reply["next_change"] = next;
+            else if (set->content.has("display_name_next_update"))
+                reply["next_change"] = set->content["display_name_next_update"].asDate().asString();
             return true;
         });
     }
