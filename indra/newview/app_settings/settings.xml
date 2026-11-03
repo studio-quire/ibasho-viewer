@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23, 2026-11-02): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy; for servers: IbashoMaxFPS, IbashoIdleFPS, IbashoIdleAfter, IbashoNoWebPlugin, IbashoTextureBudget); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes). Changes are marked "Ibasho". -->
+<!-- Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23, 2026-11-02, 2026-11-03): settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost, IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay, IbashoAllowLandBuy, IbashoAllowCurrencyBuy; for servers: IbashoMaxFPS, IbashoIdleFPS, IbashoIdleAfter, IbashoNoWebPlugin, IbashoTextureBudget, IbashoTrimMemory); Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes). Changes are marked "Ibasho". -->
 <llsd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="llsd.xsd">
 <map>
@@ -12069,6 +12069,17 @@
       <string>U32</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>IbashoTrimMemory</key>
+    <map>
+      <key>Comment</key>
+      <string>Ibasho (Linux): every this many seconds, give memory the viewer has freed back to the system (malloc_trim), so it shrinks again after a busy place; 0 for never. Not saved.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0</real>
     </map>
     <key>TextureCameraBoost</key>
     <map>

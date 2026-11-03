@@ -1,9 +1,10 @@
 /**
  * @file   ibashoserver.cpp
  * @brief  Running on a server without a GPU (Mesa's llvmpipe under a virtual display): a frame rate cap
- *         with a lower one while no LEAP plugin is asking anything, no web browser plugin, and a
- *         texture budget that holds. Each is a setting, off by default; Ibasho's tools set them.
- *         Written by Claude Opus 5.5, 2026-11-02.
+ *         with a lower one while no LEAP plugin is asking anything, no web browser plugin, a
+ *         texture budget that holds, and memory given back to the system now and then. Each is a
+ *         setting, off by default; Ibasho's tools set them.
+ *         Written by Claude Opus 5.5, 2026-11-02 and 2026-11-03.
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Ibasho viewer source code: an addition to the Second Life Viewer Source Code
@@ -34,8 +35,33 @@
 #include "lltimer.h"
 #include "llviewercontrol.h"
 
+#if LL_LINUX
+#include <malloc.h>
+#endif
+
 namespace ibasho
 {
+
+namespace
+{
+// glibc keeps memory the viewer has freed (textures, meshes, objects left behind on leaving a busy region) for
+// reuse rather than handing it back, so a viewer that once saw a crowd stays that size. Every IbashoTrimMemory
+// seconds, malloc_trim gives the free pages back.
+void trimMemory()
+{
+#if LL_LINUX
+    static LLCachedControl<F32> every(gSavedSettings, "IbashoTrimMemory", 0.f);
+    static F64 last = 0;
+    F64 now = LLTimer::getTotalSeconds();
+    if (every <= 0.f || now - last < every)
+    {
+        return;
+    }
+    last = now;
+    malloc_trim(0);
+#endif
+}
+}
 
 void limitFrameRate()
 {
@@ -67,6 +93,7 @@ void limitFrameRate()
         }
     }
     last_frame_end = LLTimer::getTotalSeconds();
+    trimMemory(); // once a frame is a good moment: nothing is being drawn
 }
 
 bool allowWebPlugin(const std::string& plugin_basename)

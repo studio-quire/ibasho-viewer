@@ -37,12 +37,13 @@ indra/newview/CMakeLists.txt
 indra/newview/VIEWER_VERSION.txt
     Modified for Ibasho (2026-10-22): Ibasho's own version number (a data file read by CMake).
 indra/newview/app_settings/settings.xml
-    Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23, 2026-11-02): settings for
-    the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend, IbashoMaxUploadCost,
-    IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay, IbashoAllowLandBuy,
-    IbashoAllowCurrencyBuy) and for running on servers (IbashoMaxFPS, IbashoIdleFPS,
-    IbashoIdleAfter, IbashoNoWebPlugin, IbashoTextureBudget); Report Bug goes to Ibasho's issue
-    tracker (ReportBugURL); no release notes pop up (UpdaterShowReleaseNotes).
+    Modified for Ibasho (2026-10-10, 2026-10-11, 2026-10-22, 2026-10-23, 2026-11-02, 2026-11-03):
+    settings for the Ibasho LEAP APIs and limits (IbashoMaxPayment, IbashoMaxSessionSpend,
+    IbashoMaxUploadCost, IbashoSpectator, IbashoNoActivate, IbashoMaxMessagesPerDay,
+    IbashoAllowLandBuy, IbashoAllowCurrencyBuy) and for running on servers (IbashoMaxFPS,
+    IbashoIdleFPS, IbashoIdleAfter, IbashoNoWebPlugin, IbashoTextureBudget, IbashoTrimMemory);
+    Report Bug goes to Ibasho's issue tracker (ReportBugURL); no release notes pop up
+    (UpdaterShowReleaseNotes).
 indra/newview/app_settings/settings_per_account.xml
     Modified for Ibasho (2026-10-22): chat and IM transcripts off by default (LogNearbyChat,
     KeepConversationLogTranscripts).
