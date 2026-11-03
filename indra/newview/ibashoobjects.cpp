@@ -853,15 +853,28 @@ std::string modifyObject(LLViewerObject* o, const LLSD& p)
             type |= UPD_ROTATION;
         }
     }
-    if (type)
+    // Rotation and scale always go with the prim's position (the new one, else where it is), as Linden Lab's build
+    // tools send them: a child's scale sent alone has been seen to move it on Second Life (2026-11-03). Never
+    // rotation and scale in one message, which those tools don't send either (OpenSim ignores it).
+    bool have_scale = p.has("scale");
+    LLVector3 scale = have_scale ? ll_vector3_from_sd(p["scale"]) : o->getScale();
+    if (is_root)
     {
-        // Moving/rotating a root moves the whole linkset; children move alone.
-        if (is_root)
-            type |= UPD_LINKED_SETS;
-        sendMultipleUpdate(o, type, pos, rot, LLVector3());
+        // Moving or rotating a root moves the whole linkset; its scale is its own (no UPD_LINKED_SETS, which
+        // would scale every prim).
+        if (type)
+            sendMultipleUpdate(o, type | UPD_POSITION | UPD_LINKED_SETS, pos, rot, LLVector3());
+        if (have_scale)
+            sendMultipleUpdate(o, UPD_POSITION | UPD_SCALE, pos, rot, scale);
     }
-    if (p.has("scale"))
-        sendMultipleUpdate(o, UPD_SCALE, LLVector3(), LLQuaternion(), ll_vector3_from_sd(p["scale"]));
+    else
+    {
+        // A child alone: its position (local) with the rotation, then with the scale.
+        if (type)
+            sendMultipleUpdate(o, type | UPD_POSITION, pos, rot, LLVector3());
+        if (have_scale)
+            sendMultipleUpdate(o, UPD_POSITION | UPD_SCALE, pos, rot, scale);
+    }
 
     // Shape
     if (o->getVolume())
