@@ -22,6 +22,10 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-11-03): where the disks give no id (a container has no /dev/disk/by-uuid), the
+ * serial number is made from an id of this install's own instead of from nothing, which every such install
+ * would share. Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -30,7 +34,9 @@
 
 #include "llcommandlineparser.h"
 
+#include "lldir.h" // Ibasho
 #include "lldiriterator.h"
+#include "llfile.h" // Ibasho
 #include "llurldispatcher.h"        // SLURL from other app instance
 #include "llviewernetwork.h"
 #include "llviewercontrol.h"
@@ -712,6 +718,40 @@ bool LLAppViewerLinux::initParseCommandLine(LLCommandLineParser& clp)
     return true;
 }
 
+// Ibasho: this install's own id (see generateSerialNumber).
+static std::string ibashoInstallId()
+{
+    std::string path = gDirUtilp->add(gDirUtilp->getOSUserAppDir(), "install_id");
+    std::string id;
+    {
+        llifstream in(path.c_str());
+        if (in.is_open())
+        {
+            std::getline(in, id);
+        }
+    }
+    LLStringUtil::trim(id);
+    if (LLUUID::validate(id) && LLUUID(id).notNull())
+    {
+        return id;
+    }
+    id = LLUUID::generateNewID().asString();
+    llofstream out(path.c_str(), std::ios::trunc);
+    if (out.is_open())
+    {
+        out << id << std::endl;
+    }
+    if (!out.is_open() || !out.good())
+    {
+        LL_WARNS("AppInit") << "Couldn't keep this install's id in " << path << ": a new one next time" << LL_ENDL;
+    }
+    else
+    {
+        LL_INFOS("AppInit") << "No disk ids here: made this install's own id (" << path << ")" << LL_ENDL;
+    }
+    return id;
+}
+
 std::string LLAppViewerLinux::generateSerialNumber()
 {
     char serial_md5[MD5HEX_STR_SIZE];
@@ -732,6 +772,14 @@ std::string LLAppViewerLinux::generateSerialNumber()
             // longest (and secondarily alphabetically last) so far
             best = this_name;
         }
+    }
+
+    // Ibasho: no disk ids (a container) would make this the hash of nothing, the same for every such install,
+    // tying their accounts together where Linden Lab sees it. One of the install's own instead, made at
+    // random the first time and kept beside the viewer's settings (so it lasts as long as the saved login).
+    if (best.empty())
+    {
+        best = ibashoInstallId();
     }
 
     // we don't return the actual serial number, just a hash of it.

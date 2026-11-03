@@ -87,6 +87,10 @@ indra/newview/llappviewer.cpp
     frame rate cap (IbashoMaxFPS, IbashoIdleFPS).
 indra/newview/llappviewer.h
     Modified for Ibasho (2026-10-22): the window class is Ibasho's own.
+indra/newview/llappviewerlinux.cpp
+    Modified for Ibasho (2026-11-03): where the disks give no id (a container), the serial number is
+    made from an id of the install's own, kept in the viewer's settings folder, instead of from
+    nothing.
 indra/newview/llappviewerwin32.cpp
     Modified for Ibasho (2026-10-22): the single-instance mutex is Ibasho's own.
 indra/newview/llavatarpropertiesprocessor.cpp
