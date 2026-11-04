@@ -155,7 +155,8 @@ indra/newview/llviewerparcelmgr.cpp
     Modified for Ibasho (2026-10-22): land purchases refused unless IbashoAllowLandBuy; parcel
     passes within the spending caps.
 indra/newview/llviewertexture.cpp
-    Modified for Ibasho (2026-11-02): a texture budget that holds (IbashoTextureBudget).
+    Modified for Ibasho (2026-11-02, 2026-11-03): a texture budget that holds (IbashoTextureBudget),
+    avatar bakes included.
 indra/newview/llviewerwindow.cpp
     Modified for Ibasho (2026-10-11, 2026-10-22, 2026-11-02): hook: spectator mode is set up before
     the window exists; no web floaters preloaded without the web plugin (IbashoNoWebPlugin).

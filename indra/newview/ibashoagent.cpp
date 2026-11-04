@@ -1176,6 +1176,11 @@ public:
             "kept across mode changes. Not saved: a restart starts with it off. Sounds are untouched.\n"
             "Replies as getHidden, plus [\"grew\"]: whether anyone may have become hidden by this call.",
             [](const LLSD& data) { ibasho::hideAvatars(data); });
+        add("textureStats",
+            "Where texture memory goes: the viewer's totals and discard bias, the fetched textures by boost level\n"
+            "(count, MB at their current discard level, raw copies, faceless, on screen, by size), and the\n"
+            "[\"top\"] (15, at most 200) largest. MB are real bytes, not the budget's doubled count.",
+            [](const LLSD& data) { Response response(ibasho::textureStats(data), data); });
         add("getHidden",
             "Avatar hiding state: {mode, ids, except, in_snapshots, hidden_now: [avatar ids hidden at the\n"
             "moment], shown_now: [the other avatars the viewer knows of, not me]}.",

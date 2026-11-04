@@ -94,6 +94,12 @@ namespace ibasho
     bool allowWebPlugin(const std::string& plugin_basename);
     // IbashoTextureBudget in MB, or 0 for the viewer's own budget from the reported video memory.
     F32 textureBudgetMB();
+    // With IbashoTextureBudget set, the lowest discard level a texture of this boost and full size may have:
+    // avatar bakes and my avatar's textures at most 512, the world's at most RenderMaxTextureResolution, even
+    // where a loaded callback asks for more. 0 otherwise.
+    S32 textureDiscardFloor(S32 boost, S32 full_width, S32 full_height);
+    // IbashoAgent textureStats: where texture memory goes.
+    LLSD textureStats(const LLSD& data);
 }
 
 #endif

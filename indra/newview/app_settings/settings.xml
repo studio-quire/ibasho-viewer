@@ -12062,7 +12062,7 @@
     <key>IbashoTextureBudget</key>
     <map>
       <key>Comment</key>
-      <string>Ibasho: texture and vertex memory in MB the viewer keeps itself to, discarding detail beyond it; 0 for the viewer's own budget from the reported video memory (with software rendering, that is system memory). Measured the way the viewer measures it, which counts each byte about twice. Not saved.</string>
+      <string>Ibasho: texture and vertex memory in MB the viewer keeps itself to, discarding detail beyond it; 0 for the viewer's own budget from the reported video memory (with software rendering, that is system memory). Measured the way the viewer measures it, which counts each byte about twice. While it's set, avatar bakes and my own avatar's textures are held to 512 and the world's to RenderMaxTextureResolution, whatever asks for more. Not saved.</string>
       <key>Persist</key>
       <integer>0</integer>
       <key>Type</key>

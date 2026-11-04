@@ -24,8 +24,8 @@
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  *
- * Modified for Ibasho (2026-11-02): a texture budget that holds (IbashoTextureBudget). Changes are marked
- * "Ibasho".
+ * Modified for Ibasho (2026-11-02, 2026-11-03): a texture budget that holds (IbashoTextureBudget), avatar
+ * bakes included. Changes are marked "Ibasho".
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -1732,12 +1732,15 @@ void LLViewerFetchedTexture::processTextureStats()
 
     if(mFullyLoaded)
     {
-        if(mDesiredDiscardLevel > mMinDesiredDiscardLevel)//need to load more
+        // Ibasho: not more than the size limit, either (IbashoTextureBudget)
+        S32 ibasho_floor = llmin(ibasho::textureDiscardFloor(mBoostLevel, mFullWidth, mFullHeight), (S32)getMaxDiscardLevel());
+        if(mDesiredDiscardLevel > llmax((S32)mMinDesiredDiscardLevel, ibasho_floor))//need to load more
         {
             mDesiredDiscardLevel = llmin(mDesiredDiscardLevel, mMinDesiredDiscardLevel);
             mDesiredDiscardLevel = llmin(mDesiredDiscardLevel, (S32)mLoadedCallbackDesiredDiscardLevel);
             mFullyLoaded = false;
         }
+        mDesiredDiscardLevel = llmax(mDesiredDiscardLevel, ibasho_floor);
         //setDebugText("fully loaded");
     }
     else
@@ -1797,6 +1800,9 @@ void LLViewerFetchedTexture::processTextureStats()
                 mDesiredDiscardLevel = llmin(mDesiredDiscardLevel, (S32)mLoadedCallbackDesiredDiscardLevel);
             }
             mKnownDrawSizeChanged = false;
+            // Ibasho: with a texture budget, fetched no larger than its size limit (IbashoTextureBudget)
+            mDesiredDiscardLevel = llmax(mDesiredDiscardLevel,
+                llmin(ibasho::textureDiscardFloor(mBoostLevel, mFullWidth, mFullHeight), (S32)getMaxDiscardLevel()));
 
             if(getDiscardLevel() >= 0 && (getDiscardLevel() <= mDesiredDiscardLevel))
             {
@@ -1811,6 +1817,20 @@ void LLViewerFetchedTexture::processTextureStats()
         if(getDiscardLevel() < 0 || getDiscardLevel() > mDesiredDiscardLevel)
         {
             mFullyLoaded = false;
+        }
+    }
+    else
+    {
+        // Ibasho: one that came larger than its size limit (its full size unknown until it arrived, or loaded
+        // before the limit applied) is scaled down to it, as LOD textures are (IbashoTextureBudget)
+        S32 ibasho_floor = llmin(ibasho::textureDiscardFloor(mBoostLevel, mFullWidth, mFullHeight), (S32)getMaxDiscardLevel());
+        S32 current = getDiscardLevel();
+        if (ibasho_floor > 0 && current >= 0 && current < ibasho_floor && !mDownScalePending
+            && mGLTexturep.notNull() && mGLTexturep->getHasGLTexture())
+        {
+            mDesiredDiscardLevel = llmax(mDesiredDiscardLevel, ibasho_floor);
+            mDownScalePending = true;
+            gTextureList.mDownScaleQueue.push(this);
         }
     }
 }
@@ -1855,7 +1875,10 @@ void LLViewerFetchedTexture::setBoostLevel(S32 level)
 
     if (level >= LLViewerTexture::BOOST_HIGH)
     {
-        mDesiredDiscardLevel = 0;
+        // Ibasho: no larger than the size limit, either: my own avatar's wearables are boosted again every frame
+        // they're below full size, which otherwise fetched them whole again after each scale-down
+        // (IbashoTextureBudget)
+        mDesiredDiscardLevel = llmin(ibasho::textureDiscardFloor(mBoostLevel, mFullWidth, mFullHeight), (S32)getMaxDiscardLevel());
     }
 }
 
@@ -3130,6 +3153,23 @@ void LLViewerLODTexture::processTextureStats()
             mDesiredDiscardLevel = current_discard;
         }
         mDesiredDiscardLevel = llmin(mDesiredDiscardLevel, (S32)mLoadedCallbackDesiredDiscardLevel);
+    }
+
+    // Ibasho: with a texture budget (a server), avatar bakes and the world's textures are held to a size
+    // whatever a loaded callback asks for (bakes off screen too), and scaled down to it, bakes included
+    // (IbashoTextureBudget)
+    if (!textures_fullres && !mDontDiscard && mUseMipMaps)
+    {
+        S32 ibasho_floor = llmin(ibasho::textureDiscardFloor(mBoostLevel, mFullWidth, mFullHeight), (S32)getMaxDiscardLevel());
+        if (ibasho_floor > 0 && mDesiredDiscardLevel < ibasho_floor)
+        {
+            mDesiredDiscardLevel = ibasho_floor;
+            S32 current_discard = getDiscardLevel();
+            if (current_discard >= 0 && current_discard < ibasho_floor && !mForceToSaveRawImage)
+            {
+                scaleDown();
+            }
+        }
     }
 
     if(mForceToSaveRawImage && mDesiredSavedRawDiscardLevel >= 0)
