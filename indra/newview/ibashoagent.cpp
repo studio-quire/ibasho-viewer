@@ -1004,7 +1004,7 @@ public:
             &IbashoAgentListener::setHome);
         add("parcel",
             "Reply with the current parcel and region: name, desc, owner, area, flags, music/media, rights;\n"
-            "my_voice: whether my own voice chat is connected (the parcel's \"voice\" right says if it's allowed).",
+            "my_voice: whether my own voice chat is on, not that it has connected here (the parcel's \"voice\" right says if it's allowed).",
             &IbashoAgentListener::parcel,
             llsd::map("reply", LLSD()));
         add("people",
