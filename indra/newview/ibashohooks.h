@@ -86,6 +86,9 @@ namespace ibasho
     // IbashoAgent findRegion (ibashoagent.cpp): each block of a MapBlockReply, as LLWorldMapMessage reads it.
     // `map_layer`: the reply is to a map-layer request (a name search is one); an empty name ends a search.
     void onMapBlock(bool map_layer, const std::string& name, U32 x_world, U32 y_world, U8 access);
+    // IbashoAgent findPlaces (ibashoagent.cpp): a DirPlacesReply carrying one of our searches' query ids is ours:
+    // returns true, and the directory's panels skip it.
+    bool onDirPlacesReply(LLMessageSystem* msg, const LLUUID& query_id);
 
     // Running on a server without a GPU (ibashoserver.cpp). At the end of each frame: sleeps as long as
     // IbashoMaxFPS, or IbashoIdleFPS while no LEAP request has come for IbashoIdleAfter seconds, asks.

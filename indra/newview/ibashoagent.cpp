@@ -64,6 +64,8 @@
 #include "llwindow.h"
 #include "llwearabletype.h"
 #include "llparcel.h"
+#include "llqueryflags.h"
+#include "llremoteparcelrequest.h"
 #include "llregionflags.h"
 #include "llsdutil.h"
 #include "llsdutil_math.h"
@@ -88,6 +90,7 @@
 #include "llvoiceclient.h"
 #include "llvoavatarself.h"
 #include "llworld.h"
+#include "llworldmap.h"
 #include "llworldmapmessage.h"
 #include "llcharacter.h"
 #include "lldrawable.h"
@@ -942,6 +945,96 @@ void forget(const std::shared_ptr<Search>& s)
 }
 } // namespace regions
 
+// ---- findPlaces (2026-11-04, Claude Opus 5.5) ----
+// Places by words and category, as the directory's Places tab finds them (LLPanelDirPlaces::queryCore: a
+// DirPlacesQuery, which searches with my account's own maturity access; Second Life's web search gives a visitor
+// General places only). The grid answers in several DirPlacesReply messages, at most 101 results from the query's
+// start, the 101st saying there are more; a hook in LLPanelDirBrowser::processDirPlacesReply hands ours over. Then
+// each place on the page is asked for as its place profile asks (ParcelInfoRequest, through
+// LLRemoteParcelInfoProcessor): its region, position, rating and description.
+namespace places
+{
+constexpr S32 BATCH = 100;
+constexpr F64 SETTLE = 1.0;        // after the last reply, wait this long for more
+constexpr F64 DETAILS_WAIT = 6.0;  // then at most this long for the places' details
+const char* const LEVELS[] = { "general", "moderate", "adult" };
+
+struct Hit
+{
+    LLUUID id;
+    std::string name;
+    bool for_sale = false;
+    F32 dwell = 0.f;
+};
+
+struct Search : public LLRemoteParcelInfoObserver
+{
+    LLUUID query_id;
+    bool answered = false;
+    U32 status = 0;
+    F64 last_at = 0.0;
+    std::vector<Hit> hits;
+    // Once the search has settled: the places on the page, and their details as they come.
+    bool paged = false;
+    bool more = false;
+    F64 paged_at = 0.0;
+    std::vector<LLUUID> page;
+    std::map<LLUUID, LLParcelData> details;
+
+    void processParcelInfo(const LLParcelData& data) override
+    {
+        if (std::find(page.begin(), page.end(), data.parcel_id) != page.end())
+            details[data.parcel_id] = data;
+    }
+    void setParcelID(const LLUUID&) override {}
+    void setErrorStatus(S32, const std::string&) override {}
+
+    void forget()
+    {
+        for (const LLUUID& id : page)
+            LLRemoteParcelInfoProcessor::getInstance()->removeObserver(id, this);
+    }
+};
+std::map<LLUUID, std::shared_ptr<Search>> sSearches;
+
+// 0, 1, 2; -1 for anything else
+S32 levelOf(const std::string& maturity)
+{
+    for (S32 i = 0; i < 3; ++i)
+        if (maturity == LEVELS[i])
+            return i;
+    return -1;
+}
+
+// As LLPanelPlaceProfile::processParcelInfo reads ParcelInfoReply's flags.
+S32 levelOfFlags(U8 flags)
+{
+    return (flags & 0x2) ? 2 : (flags & 0x1) ? 1 : 0;
+}
+
+LLSD describe(const Hit& hit, const LLParcelData* d)
+{
+    LLSD p = llsd::map("id", hit.id, "name", hit.name, "traffic", (S32)ll_round(hit.dwell), "for_sale", hit.for_sale);
+    if (!d)
+        return p;
+    if (hit.dwell <= 0.f)
+        p["traffic"] = (S32)ll_round(d->dwell); // sorted by name, the directory sends none
+    LLVector3d global(d->global_x, d->global_y, d->global_z);
+    LLVector3d origin(floor(d->global_x / REGION_WIDTH_METERS) * REGION_WIDTH_METERS,
+                      floor(d->global_y / REGION_WIDTH_METERS) * REGION_WIDTH_METERS, 0.0);
+    if (LLSimInfo* sim = LLWorldMap::getInstance()->simInfoFromName(d->sim_name))
+        origin = sim->getGlobalOrigin(); // a larger region (OpenSim's var regions), if the map has it
+    static const char* const RATINGS[] = { "General", "Moderate", "Adult" };
+    p["region"] = d->sim_name;
+    p["pos"] = llsd::array(global.mdV[VX] - origin.mdV[VX], global.mdV[VY] - origin.mdV[VY], global.mdV[VZ]);
+    p["global"] = ll_sd_from_vector3d(global);
+    p["rating"] = RATINGS[levelOfFlags(d->flags)];
+    p["description"] = d->desc;
+    p["area"] = d->actual_area;
+    return p;
+}
+} // namespace places
+
 class IbashoAgentListener : public LLEventAPI
 {
 public:
@@ -1066,6 +1159,19 @@ public:
             "(default 10).",
             &IbashoAgentListener::findRegion,
             llsd::map("name", LLSD(), "reply", LLSD()));
+        add("findPlaces",
+            "Search places as the directory's Places tab does, with my account's maturity access: [\"query\"]\n"
+            "(words to find; \"\" for any, which the grid may refuse without a category), [\"category\"] (a parcel\n"
+            "category: linden, adult, arts, store, educational, game, gather, newcomer, park, home, shopping, stage,\n"
+            "other, rental; default any), [\"maturity\"] (the most to include: general, moderate or adult; never more\n"
+            "than my account may enter), [\"sort\"] (traffic, the default, or name), [\"start\"] (results to skip)\n"
+            "and [\"limit\"] (default 20; one reply stays within a hundred from a multiple of 100). Replies {places:\n"
+            "[{id, name, traffic, for_sale, region?, pos? (in the region), global?, rating?, description?, area?}],\n"
+            "more, maturity (the most the search included)} once the grid has answered and the places' details have\n"
+            "come (those that haven't within a few seconds come without them), or {error} if the grid's search hasn't\n"
+            "answered within [\"timeout\"] s (default 20).",
+            &IbashoAgentListener::findPlaces,
+            llsd::map("reply", LLSD()));
         add("upload",
             "Upload file [\"path\"] (png/tga/bmp/jpg texture, wav sound, anim animation) as a new inventory\n"
             "item, paying the normal L$ upload fee. Optional [\"name\"] (default: file name), [\"desc\"],\n"
@@ -1914,6 +2020,142 @@ private:
         });
     }
 
+    void findPlaces(const LLSD& data)
+    {
+        if (!gAgent.getRegion() || LLStartUp::getStartupState() < STATE_STARTED)
+            return replyError(data, "not in world yet");
+        std::string query = data["query"].asString();
+        LLStringUtil::trim(query);
+        if (query.size() > 200)
+            return replyError(data, "query: at most 200 bytes");
+        S32 category = LLParcel::C_ANY;
+        const std::string cat = data["category"].asString();
+        if (!cat.empty() && cat != "any")
+        {
+            category = LLParcel::C_NONE;
+            for (S32 i = LLParcel::C_NONE + 1; i < LLParcel::C_COUNT; ++i)
+                if (cat == LLParcel::getCategoryString((LLParcel::ECategory)i))
+                    category = i;
+            if (category == LLParcel::C_NONE)
+                return replyError(data, "no category " + cat + " (linden, adult, arts, store, educational, game, "
+                                        "gather, newcomer, park, home, shopping, stage, other, rental, any)");
+        }
+        S32 want = data.has("maturity") ? places::levelOf(data["maturity"].asString()) : 2;
+        if (want < 0)
+            return replyError(data, "maturity: general, moderate or adult");
+        U32 flags = DFQ_INC_PG;
+        S32 most = 0;
+        if (want >= 1 && gAgent.canAccessMature())
+        {
+            flags |= DFQ_INC_MATURE;
+            most = 1;
+        }
+        if (want >= 2 && gAgent.canAccessAdult())
+        {
+            flags |= DFQ_INC_ADULT;
+            most = 2;
+        }
+        const std::string sort = data.has("sort") ? data["sort"].asString() : "traffic";
+        if (sort == "traffic")
+            flags |= DFQ_DWELL_SORT;
+        else if (sort == "name")
+            flags |= DFQ_NAME_SORT | DFQ_SORT_ASC;
+        else
+            return replyError(data, "sort: traffic or name"); // Second Life's sends the busiest whatever the order
+        const S32 start = llclamp(data["start"].asInteger(), 0, 100000);
+        const S32 skip = start % places::BATCH;
+        const S32 limit = llmin(data.has("limit") ? llclamp(data["limit"].asInteger(), 1, places::BATCH) : 20,
+                                places::BATCH - skip);
+        F64 timeout = data.has("timeout") ? llclamp(data["timeout"].asReal(), 2.0, 120.0) : 20.0;
+
+        auto s = std::make_shared<places::Search>();
+        s->query_id.generate();
+        places::sSearches[s->query_id] = s;
+        LLMessageSystem* msg = gMessageSystem;
+        msg->newMessage("DirPlacesQuery");
+        msg->nextBlock("AgentData");
+        msg->addUUID("AgentID", gAgent.getID());
+        msg->addUUID("SessionID", gAgent.getSessionID());
+        msg->nextBlock("QueryData");
+        msg->addUUID("QueryID", s->query_id);
+        msg->addString("QueryText", query);
+        msg->addU32("QueryFlags", flags);
+        msg->addS8("Category", (S8)category);
+        msg->addString("SimName", "");
+        msg->addS32Fast(_PREHASH_QueryStart, start - skip);
+        gAgent.sendReliableMessage();
+
+        ibasho::deferReply(data, timeout, [s, skip, limit, most, sort](LLSD& reply, bool expired)
+        {
+            const F64 now = lookup::now();
+            if (!s->paged)
+            {
+                bool settled = s->answered && (now - s->last_at >= places::SETTLE || (S32)s->hits.size() > places::BATCH);
+                if (!settled && !expired)
+                    return false;
+                if (!s->answered)
+                {
+                    places::sSearches.erase(s->query_id);
+                    reply["error"] = "no answer from the grid's place search in time (on OpenSim, only grids with a "
+                                     "search module answer)";
+                    return true;
+                }
+                const U32 status = s->status;
+                const char* refusal =
+                    (status & STATUS_SEARCH_PLACES_BANNEDWORD) ? "the grid's search refuses a word in it" :
+                    (status & STATUS_SEARCH_PLACES_SHORTSTRING) ?
+                        "the grid's search wants longer words (Second Life's, 3 letters or more)" :
+                    (status & STATUS_SEARCH_PLACES_SEARCHDISABLED) ? "the grid's place search is turned off" : nullptr;
+                if (refusal && s->hits.empty())
+                {
+                    places::sSearches.erase(s->query_id);
+                    reply["error"] = refusal;
+                    return true;
+                }
+                // The 101st, the last to arrive, only says there are more (as LLPanelDirBrowser::showNextButton).
+                s->paged = true;
+                s->paged_at = now;
+                s->more = (S32)s->hits.size() > skip + limit;
+                if ((S32)s->hits.size() > places::BATCH)
+                    s->hits.resize(places::BATCH);
+                // the grid sorts each message; across messages, sort as the directory's list does
+                std::stable_sort(s->hits.begin(), s->hits.end(), [&sort](const places::Hit& a, const places::Hit& b)
+                {
+                    if (sort == "name")
+                        return LLStringUtil::compareDictInsensitive(a.name, b.name) < 0;
+                    return a.dwell > b.dwell;
+                });
+                for (S32 i = skip; i < skip + limit && i < (S32)s->hits.size(); ++i)
+                {
+                    const LLUUID& id = s->hits[i].id;
+                    s->page.push_back(id);
+                    LLRemoteParcelInfoProcessor::getInstance()->addObserver(id, s.get());
+                    LLRemoteParcelInfoProcessor::getInstance()->sendParcelInfoRequest(id);
+                }
+                if (!expired && !s->page.empty())
+                    return false;
+            }
+            if (!expired && s->details.size() < s->page.size() && now - s->paged_at < places::DETAILS_WAIT)
+                return false;
+            s->forget();
+            places::sSearches.erase(s->query_id);
+            LLSD found = LLSD::emptyArray();
+            for (S32 i = skip; i < skip + limit && i < (S32)s->hits.size(); ++i)
+            {
+                const places::Hit& hit = s->hits[i];
+                auto d = s->details.find(hit.id);
+                const LLParcelData* details = d == s->details.end() ? nullptr : &d->second;
+                if (details && places::levelOfFlags(details->flags) > most)
+                    continue; // above what was asked for: the grid shouldn't send it
+                found.append(places::describe(hit, details));
+            }
+            reply["places"] = found;
+            reply["more"] = s->more;
+            reply["maturity"] = places::LEVELS[most];
+            return true;
+        });
+    }
+
     void upload(const LLSD& data)
     {
         const std::string path = data["path"].asString();
@@ -2292,6 +2534,37 @@ void ibasho::onMapBlock(bool map_layer, const std::string& name, U32 x_world, U3
         else if (s->similar.size() < 20)
             s->similar.append(name);
     }
+}
+
+// findPlaces' answers (see places above): a DirPlacesReply to one of our searches, in as many parts as the grid sends.
+bool ibasho::onDirPlacesReply(LLMessageSystem* msg, const LLUUID& query_id)
+{
+    auto found = places::sSearches.find(query_id);
+    if (found == places::sSearches.end())
+        return false;
+    places::Search& s = *found->second;
+    if (s.paged)
+        return true; // late: the page has been made
+    if (msg->getNumberOfBlocks("StatusData"))
+    {
+        U32 status = 0;
+        msg->getU32("StatusData", "Status", status);
+        s.status |= status;
+    }
+    S32 count = msg->getNumberOfBlocks("QueryReplies");
+    for (S32 i = 0; i < count; ++i)
+    {
+        places::Hit hit;
+        msg->getUUID("QueryReplies", "ParcelID", hit.id, i);
+        msg->getString("QueryReplies", "Name", hit.name, i);
+        msg->getBOOL("QueryReplies", "ForSale", hit.for_sale, i);
+        msg->getF32("QueryReplies", "Dwell", hit.dwell, i);
+        if (hit.id.notNull()) // the "nothing found" line has none
+            s.hits.push_back(hit);
+    }
+    s.answered = true;
+    s.last_at = lookup::now();
+    return true;
 }
 
 // Spectator mode (2026-10-11, Claude Opus 5.5): the window layer drops real input (llwindowwin32.cpp); this keeps

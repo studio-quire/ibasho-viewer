@@ -22,6 +22,9 @@
  *
  * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
+ *
+ * Modified for Ibasho (2026-11-04): hook: place search replies go to IbashoAgent findPlaces when they answer one
+ * of its searches. Changes are marked "Ibasho".
  */
 
 // Base class for the various search panels/results browsers
@@ -31,6 +34,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llpaneldirbrowser.h"
+#include "ibashohooks.h" // Ibasho
 
 // linden library includes
 #include "lldir.h"
@@ -479,6 +483,8 @@ void LLPanelDirBrowser::processDirPlacesReply(LLMessageSystem* msg, void**)
 
     msg->getUUID("AgentData", "AgentID", agent_id);
     msg->getUUID("QueryData", "QueryID", query_id );
+    if (ibasho::onDirPlacesReply(msg, query_id)) // Ibasho
+        return;
 
     if (msg->getNumberOfBlocks("StatusData"))
     {
